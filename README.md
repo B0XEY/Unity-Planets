@@ -5,11 +5,12 @@
 Make procedural voxel planets in unity
 
 ## Features
-- noise function uses jobs / brust for faster performance.
+- Noise function uses jobs / brust for faster performance.
 - Noise settings controlled with Scriptable Object
-- Mutilputple noise Layers
+- Multiple noise Layers
 - Using [Noise](https://github.com/unbeGames/noise.git) for 3D noise values
 - Customizable Planet Material via Scriptable Object
+- Terriforming
 - Water Shader (Basic Waves)
 - Mesh LODS via Octree
 - Large planets
