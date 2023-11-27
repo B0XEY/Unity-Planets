@@ -5,8 +5,11 @@
 # Unity Planets: Unity 2022.3.6f1 - URP
 Make procedural voxel planets in unity
 
+
 ## Features
 - uses jobs / brust for faster performance.
+- Uses Octree
+- ![ezgif com-crop](https://github.com/B0XEY/Unity-Planets/assets/94720404/36066c3d-04d4-4b35-8301-1211b252a285)
 - Noise Layers
 - Customizable Planet Material via Scriptable Object
 - Terraforming
