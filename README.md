@@ -13,8 +13,7 @@ Make procedural voxel planets in unity
 - Noise Layers
 - Customizable Planet Material via Scriptable Object
 - Terraforming
-- Water Shader (Basic Waves)
-- Mesh LODS via Octree
+- Water Shader (3D noise based waves)
 - Large planets
 - Example scene
 
