@@ -16,3 +16,7 @@ Make procedural voxel planets in unity
 - Mesh LODS via Octree
 - Large planets
 - Example scene
+
+
+## License
+This project is under the [MIT License](LICENSE).
