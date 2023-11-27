@@ -17,6 +17,9 @@ Make procedural voxel planets in unity
 
 ## Images
 ![Screenshot 2023-11-27 125453](https://github.com/B0XEY/Unity-Planets/assets/94720404/a017d0a4-f75a-45f6-8dc6-94f0b5238aa5)
+![image](https://github.com/B0XEY/Unity-Planets/assets/94720404/7238b250-0731-4556-b0cd-041353129042)
+*Atmosphere shader not included ([Link](https://assetstore.unity.com/packages/3d/environments/sci-fi/space-graphics-planets-124578))*
+
 
 ## Credits
 [unbeGames's noise algorithm](https://github.com/unbeGames/noise.git) is used for faster noise generation and the backbone of the planets looks
