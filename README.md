@@ -22,7 +22,8 @@ Make procedural voxel planets in unity
 
 
 ## Credits
-[unbeGames's noise algorithm](https://github.com/unbeGames/noise.git) is used for faster noise generation and the backbone of the planets looks
+- [unbeGames's noise algorithm](https://github.com/unbeGames/noise.git) is used for faster noise generation and the backbone of the planets looks
+- [Video series](https://www.youtube.com/watch?v=dTdn3CC64sc&list=PLVsTSlfj0qsWt0qafrT6blp5yvchzO4ee) was used to create the marching cubes terrain with minor adjustments from me.
 
 ## License
 MIT License
