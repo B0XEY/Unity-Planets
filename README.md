@@ -1,8 +1,9 @@
+![Static Badge](https://img.shields.io/badge/Verson-2022.3.6f1-blue?style=for-the-badge&logo=Unity)
 [![Static Badge](https://img.shields.io/badge/Version-0.0.1a-purple?style=for-the-badge)](https://github.com/B0XEY/Unity-Planets/releases)
 ![Static Badge](https://img.shields.io/badge/Bugs-few-red?style=for-the-badge)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
 
-# Unity Planets: Unity 2022.3.6f1 - URP
+# Unity Planets
 Make procedural voxel planets in unity
 
 
