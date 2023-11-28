@@ -1,11 +1,9 @@
-![Static Badge](https://img.shields.io/badge/Verson-2022.3.6f1-blue?style=for-the-badge&logo=Unity)
-[![Static Badge](https://img.shields.io/badge/Version-0.0.1a-purple?style=for-the-badge)](https://github.com/B0XEY/Unity-Planets/releases)
-![Static Badge](https://img.shields.io/badge/Bugs-few-red?style=for-the-badge)
+![Static Badge](https://img.shields.io/badge/Verson-2022.3.6f1-5300EB?style=for-the-badge&logo=Unity)
+[![Static Badge](https://img.shields.io/badge/Version-0.0.1a-blue?style=for-the-badge)](https://github.com/B0XEY/Unity-Planets/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
+![Static Badge](https://img.shields.io/badge/CSharp-B80000?style=for-the-badge&logo=csharp)
 
-# Unity Planets
-Make procedural voxel planets in unity
-
+# Unity Planets - URP
 
 ## Features
 - uses jobs / brust for faster performance.
