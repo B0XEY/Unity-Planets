@@ -1,14 +1,12 @@
 ![Static Badge](https://img.shields.io/badge/Verson-2022.3.6f1-5300EB?style=for-the-badge&logo=Unity)
 [![Static Badge](https://img.shields.io/badge/Version-0.0.1a-blue?style=for-the-badge)](https://github.com/B0XEY/Unity-Planets/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
-![Static Badge](https://img.shields.io/badge/CSharp-B80000?style=for-the-badge&logo=csharp)
 
-# Unity Planets - URP
 > [!IMPORTANT]
 > This Code is unfinished and not personly deemed production ready.
 
- 
-
+# Project Overview
+Welcome to **Unity-Planets** where the coding skills come into play. The planets are fully customizable from the noise to the Terriforming that you do. I used a _ModTree_[^3] that will save all changes the player makes. Planets are boring with just terrain so why not mix it up and add some _trees_ and _grass_? All of these are aligned with the planet and thanks to not-so-random points we can spawn all the objects in the same position every time even when you load and unload the Node. This code also uses _Unity's Jobs/Burst systems_ to speed up the generation allowing for fast Update times and a higher average FPS. All the systems of the octree come together to create a wonderful place for the user to explore and make their own.
 
 ## Features
 - uses jobs / brust for faster performance.
@@ -22,8 +20,15 @@
 - Large planets
 - Example scene
 
+## To-Do
+- [ ] Planet caves
+- [ ] Planet Roation with working chunk Generation
+- [ ] Terraforming Checks
+- [ ] Object Spawning
+- [ ] Player Controller/ gravity
+
 ## Contributing
-🚀I appreciate your interest in contributing to the project. Whether you're a seasoned developer or just getting started, your contributions are highly valued. To contribute, you can follow these steps:
+I appreciate your interest in contributing to the project. Whether you're a seasoned developer or just getting started, your contributions are highly valued. To contribute, you can follow these steps:
 
 **Fork-it:** If you have improvements, bug fixes, or new features in mind, fork the repository and create a branch for your changes.
 
@@ -66,3 +71,4 @@ SOFTWARE.
 
 [^1]: These planets use 3D noise to shape the terrain. This is not the best option because of the lack of control. Thankfully [unbeGames's noise algorithm](https://github.com/unbeGames/noise.git) not only is jobs/ burst enabled but makes layered noise much faster than using normal librays.
 [^2]: The Terrian is made using the marching cube algorithm. The base of my code comes from this [video series](https://www.youtube.com/watch?v=dTdn3CC64sc&list=PLVsTSlfj0qsWt0qafrT6blp5yvchzO4ee) with was a big help with the generation. I have made minor tweaks and changes to speed up the generation. [Scrawk's Marching Cubes Project](https://github.com/Scrawk/Marching-Cubes)
+[^3]: The idea of the mod tree came from [here](https://josebasierra.gitlab.io/VoxelPlanets) after looking at solution to save memory.
