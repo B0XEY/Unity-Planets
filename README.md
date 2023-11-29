@@ -42,8 +42,9 @@ I appreciate your interest in contributing to the project. Whether you're a seas
 ## Images
 ![Screenshot 2023-11-27 125453](https://github.com/B0XEY/Unity-Planets/assets/94720404/a017d0a4-f75a-45f6-8dc6-94f0b5238aa5)
 ![image](https://github.com/B0XEY/Unity-Planets/assets/94720404/7238b250-0731-4556-b0cd-041353129042)
-![image](https://github.com/B0XEY/Unity-Planets/assets/94720404/897a1f8b-ad0c-4d4e-994c-e3494cdb4e3a)
-![image](https://github.com/B0XEY/Unity-Planets/assets/94720404/adb4e087-2ae1-4f8a-a5e9-75f96c808b03)
+![Screenshot 2023-11-28 185124](https://github.com/B0XEY/Unity-Planets/assets/94720404/a1f51629-b732-4cbe-a858-ecbf129b6cd8)
+![Screenshot 2023-11-28 185535](https://github.com/B0XEY/Unity-Planets/assets/94720404/5128e387-2cfe-4a4b-a4b9-e138de3dda1a)
+
 > [!CAUTION]
 >*Atmosphere shader not included ([Link](https://assetstore.unity.com/packages/3d/environments/sci-fi/space-graphics-planets-124578))*
 
