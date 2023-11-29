@@ -40,7 +40,6 @@ I appreciate your interest in contributing to the project. Whether you're a seas
 
 
 ## Images
-![Screenshot 2023-11-17 230944](https://github.com/B0XEY/Unity-Planets/assets/94720404/b106ffe9-d030-4066-a341-f84f8b87d428)
 ![image](https://github.com/B0XEY/Unity-Planets/assets/94720404/adb4e087-2ae1-4f8a-a5e9-75f96c808b03)
 ![Screenshot 2023-11-27 125453](https://github.com/B0XEY/Unity-Planets/assets/94720404/a017d0a4-f75a-45f6-8dc6-94f0b5238aa5)
 ![image](https://github.com/B0XEY/Unity-Planets/assets/94720404/7238b250-0731-4556-b0cd-041353129042)
