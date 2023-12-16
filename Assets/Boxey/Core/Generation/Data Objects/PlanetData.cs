@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using Boxey.Core.Editor;
 using UnityEngine;
 
 namespace Boxey.Core.Generation.Data_Objects {
@@ -13,7 +12,8 @@ namespace Boxey.Core.Generation.Data_Objects {
     public class NoiseSettings {
         [Header("Settings")]
         public NoiseType type = NoiseType.Normal;
-        [Label("Remove"), Tooltip("Subtracts values, makes planets smaller")] public bool removeLayer;
+        // [Label("Remove"), Tooltip("Subtracts values, makes planets smaller")] public bool removeLayer;
+        [Tooltip("Subtracts values, makes planets smaller")] public bool removeLayer;
         public float scale = .35f;
         [Header("Values")]
         [Range(0,2)] public float layerPower = 1;
@@ -37,7 +37,8 @@ namespace Boxey.Core.Generation.Data_Objects {
         [Header("Noise Settings")]
         public bool useNoise;
         [Space(10f)]
-        [ShowIf("useNoise")] public List<NoiseSettings> noiseLayers;
+        //[ShowIf("useNoise")] public List<NoiseSettings> noiseLayers;
+        public List<NoiseSettings> noiseLayers;
 
 
         private void OnValidate(){

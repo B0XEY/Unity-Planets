@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using Boxey.Core.Generation.Data_Objects;
 using Boxey.Core.Static;
 using Unity.Burst;
-using Boxey.Core.Editor;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
@@ -32,7 +31,6 @@ namespace Boxey.Core.Generation {
         public float PlanetRadius => planetRadius;
         //Getters Functions
         public float GetSandHeight() => ChunkMaterial.GetFloat("_Sand_Height");
-        public float GetSteepnessValue() => ChunkMaterial.GetFloat("_Steepness_Threshold");
         public float GetRandomRotation() => rotationRange.Random();
         public Vector3 GetRandomScale() => new (scaleRange.Random(), scaleRange.Random(), scaleRange.Random());
         public GameObject GetRandomSmallObject() => smallObjects.Random();
@@ -59,19 +57,19 @@ namespace Boxey.Core.Generation {
         
         [Header("Foliage Settings")]
         [SerializeField] private bool hasFoliage = true;
-        [SerializeField, ShowIf("hasFoliage")] private int foliageDistance;
+        [SerializeField] private int foliageDistance;
         [Space(5f)]
-        [SerializeField, ShowIf("hasFoliage")] private Vector2 rotationRange = new Vector2(-179, 179);
-        [SerializeField, ShowIf("hasFoliage")] private Vector2 scaleRange = new Vector2(0.85f, 1.15f);
+        [SerializeField] private Vector2 rotationRange = new Vector2(-179, 179);
+        [SerializeField] private Vector2 scaleRange = new Vector2(0.85f, 1.15f);
         [Space(5f)]
-        [SerializeField, Min(0), ShowIf("hasFoliage")] private int maxLargeObjects;
-        [SerializeField, Min(0), ShowIf("hasFoliage")] private int maxSmallObjects;
+        [SerializeField, Min(0)] private int maxLargeObjects;
+        [SerializeField, Min(0)] private int maxSmallObjects;
         [Space(7.5f)]
-        [SerializeField, ShowIf("hasFoliage")] private GameObject[] smallObjects;
-        [SerializeField, ShowIf("hasFoliage")] private GameObject[] largeObjects;
+        [SerializeField] private GameObject[] smallObjects;
+        [SerializeField] private GameObject[] largeObjects;
         
         [Header("Performance Settings")]
-        [SerializeField, Label("Creation Limit")] private int maxNodeCreationsPerFrame = 4;
+        [SerializeField] private int maxNodeCreationsPerFrame = 4;
         [Space(5f)]
         [SerializeField] private int divisions = 8;
         [SerializeField] private float splitMult = 0.25f;
