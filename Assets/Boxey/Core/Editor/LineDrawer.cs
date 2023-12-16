@@ -2,7 +2,7 @@
 using UnityEngine;
 
 namespace Boxey.Core.Editor {
-    public class LineAttribute : PropertyAttribute{
+    public class LineAttribute : PropertyAttribute {
         public readonly float Thickness;
         public Color Color;
 
