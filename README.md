@@ -3,7 +3,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
 
 > [!IMPORTANT]
-> This Code is unfinished and not personly deemed production ready.
+> This Code is unfinished and not deemed production-ready.
 
 # Project Overview
 Welcome to **Unity-Planets** where the coding skills come into play. The planets are fully customizable from the noise to the Terriforming that you do. I used a _ModTree_[^3] that will save all changes the player makes. Planets are boring with just terrain so why not mix it up and add some _trees_ and _grass_? All of these are aligned with the planet and thanks to not-so-random points we can spawn all the objects in the same position every time even when you load and unload the Node. This code also uses _Unity's Jobs/Burst systems_ to speed up the generation allowing for fast Update times and a higher average FPS. All the systems of the octree come together to create a wonderful place for the user to explore and make their own.
@@ -22,6 +22,7 @@ Welcome to **Unity-Planets** where the coding skills come into play. The planets
 
 ## To-Do
 - [ ] Planet caves
+- [ ] Planet Chunk Mesh Gaps
 - [ ] Planet Roation with working chunk Generation
 - [ ] Terraforming Checks
 - [ ] Object Spawning
