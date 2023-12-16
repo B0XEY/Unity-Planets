@@ -1,5 +1,4 @@
 ![Static Badge](https://img.shields.io/badge/Verson-2022.3.6f1-5300EB?style=for-the-badge&logo=Unity)
-[![Codacy Badge](https://app.codacy.com/project/badge/Grade/a4972ab49fba46cba64ab0636e896f5e)](https://app.codacy.com/gh/B0XEY/Unity-Planets/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
 [![Static Badge](https://img.shields.io/badge/Version-0.0.1a-blue?style=for-the-badge)](https://github.com/B0XEY/Unity-Planets/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
 
