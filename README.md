@@ -23,12 +23,12 @@ Welcome to **Unity-Planets** where the coding skills come into play. The planets
 - Example scene
 
 ## To-Do
-- [ ] Planet caves
+- [x] Planet caves
 - [ ] Planet Chunk Mesh Gaps
-- [ ] Planet Roation with working chunk Generation
+- [x] Planet Roation with working chunk Generation
 - [ ] Terraforming Checks
 - [ ] Object Spawning
-- [ ] Player Controller/ gravity
+- [ ] Player Controller / gravity
 
 ## Contributing
 I appreciate your interest in contributing to the project. Whether you're a seasoned developer or just getting started, your contributions are highly valued. To contribute, you can follow these steps:
