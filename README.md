@@ -54,7 +54,7 @@ I appreciate your interest in contributing to the project. Whether you're a seas
 ## License
 MIT License
 
-Copyright (c) 2023 Boxey Dev
+Copyright (c) 2024 Boxey Dev
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
