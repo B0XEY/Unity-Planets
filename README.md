@@ -23,9 +23,9 @@ Welcome to **Unity-Planets** where the coding skills come into play. The planets
 - Example scene
 
 ## To-Do
-- [x] Planet caves
+- [x] ~~Planet caves~~
 - [ ] Planet Chunk Mesh Gaps
-- [x] Planet Roation with working chunk Generation
+- [x] ~~Planet Roation with working chunk Generation~~
 - [ ] Terraforming Checks
 - [ ] Object Spawning
 - [ ] Player Controller / gravity
