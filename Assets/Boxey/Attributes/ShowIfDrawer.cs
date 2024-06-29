@@ -13,12 +13,12 @@ namespace Boxey.Attributes {
 #if UNITY_EDITOR
     [CustomPropertyDrawer(typeof(ShowIfAttribute))]
     public class ShowIfDrawer : PropertyDrawer {
-        ShowIfAttribute ShowIfAttribute => (ShowIfAttribute)attribute;
+        private ShowIfAttribute ShowIfAttribute => (ShowIfAttribute)attribute;
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label){
-            SerializedProperty boolProperty = property.serializedObject.FindProperty(ShowIfAttribute.BoolName);
+            var boolProperty = property.serializedObject.FindProperty(ShowIfAttribute.BoolName);
             if (boolProperty != null && boolProperty.propertyType == SerializedPropertyType.Boolean){
                 EditorGUI.BeginProperty(position, label, property);
-                bool showField = boolProperty.boolValue;
+                var showField = boolProperty.boolValue;
                 if (showField){
                     EditorGUI.PropertyField(position, property, label);
                 }
@@ -28,7 +28,7 @@ namespace Boxey.Attributes {
             }
         }
         public override float GetPropertyHeight(SerializedProperty property, GUIContent label){
-            SerializedProperty boolProperty = property.serializedObject.FindProperty(ShowIfAttribute.BoolName);
+            var boolProperty = property.serializedObject.FindProperty(ShowIfAttribute.BoolName);
             if (boolProperty != null && boolProperty.propertyType == SerializedPropertyType.Boolean){
                 return boolProperty.boolValue ? EditorGUI.GetPropertyHeight(property, label) : 0f;
             }else{

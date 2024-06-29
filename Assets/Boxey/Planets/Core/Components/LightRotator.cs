@@ -2,6 +2,7 @@ using Boxey.Planets.Core.Static;
 using UnityEngine;
 
 namespace Boxey.Planets.Core.Components {
+    [AddComponentMenu("Boxey/Components/Sun Rotator")]
     [RequireComponent(typeof(Light))]
     public class LightRotator : MonoBehaviour{
         private Transform _mainCameraTransform;

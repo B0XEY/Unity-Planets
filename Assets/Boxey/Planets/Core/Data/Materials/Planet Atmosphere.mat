@@ -1,18 +1,5 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!114 &-9137168241770939545
-MonoBehaviour:
-  m_ObjectHideFlags: 11
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d0353a89b1f911e48b9e16bdc9f2e058, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  version: 7
 --- !u!21 &2100000
 Material:
   serializedVersion: 8
@@ -20,8 +7,8 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Planet Material
-  m_Shader: {fileID: 4800000, guid: 2918676f685de894fb9f7d8ae4c773ea, type: 3}
+  m_Name: Planet Atmosphere
+  m_Shader: {fileID: 4800000, guid: 55af8bae5eab96e4191c0052c74e3190, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords:
@@ -31,7 +18,7 @@ Material:
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 1
   m_DoubleSidedGI: 0
-  m_CustomRenderQueue: -1
+  m_CustomRenderQueue: 3000
   stringTagMap: {}
   disabledShaderPasses: []
   m_LockedProperties: 
@@ -42,7 +29,23 @@ Material:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _BaseTex:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _BumpMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _CloudsBump:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _CloudsMask:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _CloudsTex:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
@@ -62,6 +65,10 @@ Material:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _GroundMask:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _MainTex:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
@@ -75,6 +82,14 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _ParallaxMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _SecondBump:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _SecondTex:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
@@ -99,11 +114,16 @@ Material:
     - _AlphaClip: 0
     - _AlphaCutoff: 0.5
     - _AlphaToMask: 0
+    - _Ambient: -0.18
+    - _AtmosphereRadius: 4200
+    - _AtmosphereSize: -30.1
     - _Blend: 0
     - _BlendModePreserveSpecular: 1
     - _BumpScale: 1
     - _ClearCoatMask: 0
     - _ClearCoatSmoothness: 0
+    - _ClipThreshold: 0.244
+    - _CloudsMix: 0
     - _Cull: 2
     - _Cutoff: 0.5
     - _DetailAlbedoMapScale: 1
@@ -111,44 +131,84 @@ Material:
     - _DstBlend: 0
     - _DstBlendAlpha: 0
     - _EnvironmentReflections: 1
-    - _Float1: 1.47
+    - _FalloffBack: 0
+    - _FalloffPlanet: 1
     - _GlossMapScale: 0
     - _Glossiness: 0
     - _GlossyReflections: 0
-    - _GrassWarping: 2
+    - _GroundMix: 0
+    - _Intensive: 1.68
+    - _LIGHT_STEPS: 10
+    - _LightIntensity: 1000
+    - _LightSteps: 15
     - _Metallic: 0
+    - _OPTICAL_DEPTH_POINTS: 10
     - _OcclusionStrength: 1
     - _Parallax: 0.005
+    - _PlanetRadius: 3800
     - _QueueControl: 0
     - _QueueOffset: 0
-    - _Radius: 3600
+    - _Radius: 442.98
+    - _RangeClouds: 0
+    - _RangeGround: 0
     - _ReceiveShadows: 0
-    - _S: 1000
-    - _S1: 0
-    - _Sand_Height: 0
-    - _Sand_Warping: 0.005
     - _Smoothness: 0.5
     - _SmoothnessTextureChannel: 0
+    - _Specular: 47.88
     - _SpecularHighlights: 1
     - _SrcBlend: 1
     - _SrcBlendAlpha: 1
-    - _Steepness: 0
-    - _Steepness_Threshold: 0.975
-    - _Steepness_Warping: 1
+    - _Steps: 48
     - _Surface: 0
+    - _TessEdgeLength: 16
+    - _TessMax: 25
+    - _TessMaxDisp: 25
+    - _TessMin: 10
+    - _TessPhongStrength: 0.5
+    - _TessValue: 16
+    - _TransAmbient: 0.1
+    - _TransDirect: 0.9
+    - _TransNormal: 0.5
+    - _TransScattering: 2
+    - _TransShadow: 0.5
+    - _TransStrength: 1
+    - _TransmissionShadow: 0.5
+    - _TransparencyPlanet: 1
     - _WorkflowMode: 1
     - _ZWrite: 1
+    - _atmosphereRadius: 8200
+    - _densityFalloff: 22
+    - _planetRadius: 8000
+    - _rayLength: 2
+    - _scatteringStrength: 1
+    - _thickness: 0.3
     m_Colors:
+    - _AtmosphereColor: {r: 0.504717, g: 0.9222887, b: 1, a: 1}
     - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
-    - _Center: {r: 0, g: 0, b: 4500, a: 0}
-    - _Color: {r: 1, g: 1, b: 1, a: 1}
-    - _Dark_Grass: {r: 0.24313727, g: 0.5686275, b: 0.1254902, a: 1}
-    - _Dark_Rock: {r: 0.32156855, g: 0.22745097, b: 0.14901957, a: 1}
-    - _Dark_Sand: {r: 0.8396226, g: 0.8396041, b: 0, a: 1}
+    - _Color: {r: 0.36320752, g: 0.81848496, b: 1, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
-    - _Grass: {r: 0.28235295, g: 0.7490196, b: 0.10980393, a: 1}
-    - _RockColor: {r: 0.32156855, g: 0.19999996, b: 0.09803919, a: 1}
-    - _Sand: {r: 0.92737895, g: 1, b: 0.3160377, a: 1}
+    - _LightColor: {r: 0.745283, g: 0.745283, b: 0.745283, a: 1}
+    - _LightDirection: {r: -0.84, g: -0.07, b: 1, a: 1}
+    - _MieScattering: {r: 1, g: 0.9, b: 0, a: 0.8}
+    - _PlanetCenter: {r: 0, g: 0, b: 4500, a: 0}
+    - _RayleighScattering: {r: 10, g: 0.05, b: -0.03, a: 0.46}
     - _SpecColor: {r: 0.19999996, g: 0.19999996, b: 0.19999996, a: 1}
-    - _center: {r: 0, g: 0, b: 1250, a: 0}
+    - _color: {r: 0.7075472, g: 0.21026166, b: 0.21026166, a: 1}
+    - _originalColor: {r: 1, g: 0.11792449, b: 0.11792449, a: 0}
+    - _planetCenter: {r: 0, g: 0, b: 4500, a: 0}
+    - _scatteringCoefficients: {r: 700, g: 530, b: 440, a: 0}
+    - _startingColor: {r: 0, g: 0, b: 0, a: 1}
   m_BuildTextureStacks: []
+--- !u!114 &57117375639168477
+MonoBehaviour:
+  m_ObjectHideFlags: 11
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d0353a89b1f911e48b9e16bdc9f2e058, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  version: 7

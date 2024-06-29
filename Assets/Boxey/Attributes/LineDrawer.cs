@@ -19,7 +19,7 @@ namespace Boxey.Attributes {
             return LineAttribute.Thickness + EditorGUIUtility.standardVerticalSpacing;
         }
         public override void OnGUI(Rect position){
-            position.y += EditorGUIUtility.standardVerticalSpacing - 5;
+            position.y += EditorGUIUtility.standardVerticalSpacing - 3;
         
             Color savedColor = GUI.color;
             GUI.color = LineAttribute.Color;

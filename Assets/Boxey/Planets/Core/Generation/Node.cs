@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using Boxey.Planets.Core.Static;
 using Unity.Mathematics;
 using UnityEngine;
@@ -10,145 +11,166 @@ namespace Boxey.Planets.Core.Generation {
         private readonly Planet _planet;
         private GameObject _nodeObject;
         private List<GameObject> _nodeFoliage;
-        private readonly Node _parent;
         private readonly Vector3 _offset;
         
         //Public Data
+        public Bounds NodeBounds { get; }
+        public Node ParentNode { get; }
         public Node[] Children;
         public readonly int Divisions;
         
         //Terraforming data done to chunk
+        private float[] _planetMap;
         private float[] _modData;
 
         private Mesh _nodeMesh;
+        private MeshFilter _nodeFilter;
+        private MeshRenderer _nodeRenderer;
+        private MeshCollider _nodeCollider;
         private bool _isGenerated;
-        private bool _isSplit;
 
         public Node(Planet planet, Node parent, int divisions, Vector3 offset, bool isRoot = false){
             _planet = planet;
-            _parent = parent;
+            ParentNode = parent;
             Divisions = divisions;
             _offset = offset;
-            if (!isRoot) CreateMesh();
+            NodeBounds = new Bounds(NodeLocalPosition(), Vector3.one * NodeScale());
+            if (isRoot) return;
+            _planetMap = JobManager.GetPlanetNoiseMap(Planet.ChunkSize, GetSamplePosition(), 
+                _planet.PlanetRadius, _planet.RootNode.NodeLocalPosition(), NodeScale(), _planet.Seed, _planet.CurrentDivisions, _planet.PlanetData);
+            _modData = _planet.TryGetModTreeData(NodeLocalPosition());
         }
         
-        // Mesh functions
-        private void CreateMesh(){
+        #region Node functions
+        private void CreateNode(){
             //Only generate the terrain when the node is the smallest and has no children
             if (!IsLeaf() || _isGenerated){
                 _isGenerated = true;
                 return;
             }
-            _isGenerated = true;
-            //Mod data retrieval for creation
-            var nodePosition = NodePosition();
-            _modData = _planet.TryGetModTreeData(nodePosition);
-            //Build Terrain - Get Noise Map
-            var meshFunction = new NodeMarching(_planet.ChunkSize, NodeScale(), _planet.ValueGate, _planet.CreateGate, GetMap(), _modData);
+            //Noise map check 
+            var nodePosition = NodeLocalPosition();
+            _planetMap ??= JobManager.GetPlanetNoiseMap(Planet.ChunkSize, GetSamplePosition(),
+                _planet.PlanetRadius, _planet.RootNode.NodeLocalPosition(), NodeScale(), _planet.Seed, _planet.CurrentDivisions,
+                _planet.PlanetData);
+            _modData ??= _planet.TryGetModTreeData(nodePosition);
+            //Build terrain
+            var meshFunction = new NodeMarching(Planet.ChunkSize, NodeScale(), _planet.ValueGate, _planet.CreateGate, _planet.SmoothTerrain, _planetMap, _modData);
             meshFunction.Generate();
-            //If there is no mesh object we do not create the gameObject
-            if (meshFunction.VerticesArray.Length == 0){
-                return;
-            }
             
-            _nodeMesh = new Mesh{
-                name = nodePosition.ToString(),
-                vertices = meshFunction.VerticesArray,
-                normals = meshFunction.NormalArray,
-                triangles = meshFunction.TriangleArray
-            };
 
-            //Creat GameObject because it is a mesh
+            //Create game object for the node
+            if (_nodeObject) {
+                Object.Destroy(_nodeMesh);
+                Object.Destroy(_nodeObject);
+                _nodeMesh = null;
+                _nodeObject = null;
+            }
             _nodeObject = Object.Instantiate(_planet.NodePrefab, _planet.ChunkHolder);
             _nodeObject.layer = 3;
-            _nodeObject.name = "Chunk: " + (nodePosition - _planet.transform.position);
-            _nodeObject.transform.localPosition = (nodePosition - _planet.StartingPosition);
-            _nodeObject.TryGetComponent<MeshFilter>(out var filter);
-            _nodeObject.TryGetComponent<MeshRenderer>(out var renderer);
-            filter.sharedMesh = _nodeMesh;
-            renderer.sharedMaterial = _planet.ChunkMaterial;
-            //Create the Mesh Collider for the object if it is one of the last 2 divisions
-            if (Divisions <= 2){
-                _nodeObject.TryGetComponent<MeshCollider>(out var collider);
-                collider.sharedMesh = _nodeMesh;
+            var position = (nodePosition - _planet.StartingPosition);
+            _nodeObject.name = $"Node ({Divisions}): ({position.x}, {position.y}, {position.z})";
+            _nodeObject.transform.localPosition = position;
+            _nodeObject.TryGetComponent(out _nodeFilter);
+            _nodeObject.TryGetComponent(out _nodeRenderer);
+            _nodeObject.TryGetComponent(out _nodeCollider);
+            
+            if (meshFunction.VerticesArray.Length != 0){
+                _nodeMesh = new Mesh{
+                    name = nodePosition.ToString(),
+                    vertices = meshFunction.VerticesArray,
+                    normals = meshFunction.NormalArray,
+                    triangles = meshFunction.TriangleArray
+                };
+                
+                _nodeFilter.sharedMesh = _nodeMesh;
+                _nodeRenderer.sharedMaterial = _planet.ChunkMaterial;
+                //Create the Mesh Collider for the object if it is one of the last 2 divisions
+                if (Divisions <= _planet.CurrentDivisions * 0.5f){
+                    _nodeCollider.sharedMesh = _nodeMesh;
+                }
+            }else {
+                _nodeObject.SetActive(false);
             }
+            _isGenerated = true;
         }
-        public void DestroyNode(){
-            if (_modData != null) _planet.SaveModTreeData(NodePosition(), _modData);
-            _modData = null;
-            _isGenerated = false;
-            //Destroy Foliage
+        public void TrySplitNode(){
+            //make sure all children are generated
+            var childNodesGenerated = Children.Sum(node => node._isGenerated ? 1 : 0);
+            if (childNodesGenerated == 0 && _nodeObject) _nodeObject.SetActive(true);
+            if (childNodesGenerated < 8) return;
+            //Split the node
+            if (_nodeObject != null && _nodeObject.activeSelf) _nodeObject.SetActive(false);
+            //Foliage
             if (_nodeFoliage != null){
                 _nodeFoliage.Clear();
                 _nodeFoliage = null;
             }
-            //Destroy Meshes
-            _isSplit = false;
-            Object.Destroy(_nodeMesh);
-            _nodeMesh = null;
-            Object.Destroy(_nodeObject);
-            _nodeObject = null;
         }
-        public void PrepareSplit(){
-            _isSplit = true;
-            if (_nodeObject != null) _nodeObject.SetActive(false);
-            if (_nodeFoliage != null){
-                _nodeFoliage.Clear();
-                _nodeFoliage = null;
-            }
-        }
-        
-        // Noise functions
-        private float3 GetSamplePosition(){
-            var nodePosition = NodePosition();
-            var offset = (float3)_planet.StartingPosition;
-            return new float3((nodePosition.z - offset.z) + offset.x, (nodePosition.y - offset.y) + offset.y, (nodePosition.x - offset.x) + offset.z);
-        }
-
-        private float[] GetMap() => JobManager.GetPlanetNoiseMap(_planet.ChunkSize, GetSamplePosition(), 
-            _planet.PlanetRadius, _planet.RootNode.NodePosition(), NodeScale(), _planet.Seed, _planet.CurrentDivisions, _planet.Data);
-        // Terraforming functions
-        public float[] GetTerraformingMap() => _modData;
-        public void CompleteTerraforming(float[] data){
-            // if the new map is not changed we should not remake the mesh
-            if (_modData == data) return;
-            // edit the current data
-            _isGenerated = false;
-            _modData = data;
-            CreateMesh();
-        }
-        
-        //Node Functions
-        private bool IsLeaf() => Children == null;
-        public void TryGeneration(){
-            if (!_isSplit) return;
-            if (!_isGenerated){
-                CreateMesh();
-                _isSplit = false;
+        public void UpdateNode(){
+            if (_isGenerated && _nodeObject && !_nodeObject.activeSelf) {
+                _nodeObject.SetActive(true);
                 return;
             }
-            if (_nodeObject == null){
-                CreateMesh();
-                _isSplit = false;
-            }else {
-                _nodeObject.SetActive(true);
-                _isSplit = false;
+            if (!IsLeaf()) {
+                //Node has kids so the mesh is not needed try to call the split function to toggle off mesh
+                TrySplitNode();
+                return;
             }
+            if (!_isGenerated || !_nodeObject){
+                //Leaf node that is not generated or the object does not exist, so we remake it
+                CreateNode();
+                return;
+            }
+        } 
+        public void DestroyNode(){
+            //Save mod data
+            if (_modData != null) _planet.SaveModTreeData(NodeLocalPosition(), _modData);
+            _isGenerated = false;
+            //Destroy foliage
+            if (_nodeFoliage != null){
+                _nodeFoliage.Clear();
+                _nodeFoliage = null;
+            }
+            //Destroy meshes / node data
+            _isGenerated = false;
+            Object.Destroy(_nodeMesh);
+            Object.Destroy(_nodeObject);
+            _nodeMesh = null;
+            _nodeObject = null;
+        }
+        #endregion
+        #region Terraforming functions
+        public void Terraform(float3 terraformPoint, float radius, float speed, bool addTerrain) {
+            //Call the job from the job manager
+            _modData = JobManager.GetTerraformMap(Planet.ChunkSize, NodeScale(), NodeWorldPosition(), _modData, terraformPoint, new float3(radius, speed, addTerrain ? 1 : -1));
+            if (!IsLeaf()) return;
+            _isGenerated = false;
+            //Update Mesh
+            UpdateNode();
+        }
+        #endregion
+        #region Node Base Functions
+        private float3 GetSamplePosition(){
+            var nodePosition = NodeLocalPosition();
+            var offset = (float3)_planet.StartingPosition;
+            return new float3((nodePosition.z - offset.z) + offset.x, nodePosition.y, (nodePosition.x - offset.x) + offset.z);
         }
         
-        private int NodeResolution() => (int)Mathf.Pow(2, Divisions - 1);
-        public int NodeScale() => _planet.ChunkSize * NodeResolution();
-        public Vector3 NodePosition(){
-            if (_parent == null){
+        public bool IsLeaf() => Children == null;
+        public int NodeScale() => Planet.ChunkSize * (int)Mathf.Pow(2, Divisions - 1);
+        private Vector3 NodeCenter() => Vector3.one * (NodeScale() / 2f);
+        private Vector3 NodeLocalPosition(){
+            if (ParentNode == null){
                 return _offset;
             }
 
             var nodeScale = NodeScale();
-            return (_offset * nodeScale) - (Vector3.one * (nodeScale / 2f)) + _parent.NodePosition();
+            return (_offset * nodeScale) - NodeCenter() + ParentNode.NodeLocalPosition();
         }
-
         public Vector3 NodeWorldPosition() {
-            return _nodeObject == null ? NodePosition() : _nodeObject.transform.position;
+            return _nodeObject == null ? NodeLocalPosition() : _nodeObject.transform.position;
         }
+        #endregion
     }
 }

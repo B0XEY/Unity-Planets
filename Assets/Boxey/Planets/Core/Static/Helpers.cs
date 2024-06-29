@@ -14,16 +14,8 @@ namespace Boxey.Planets.Core.Static {
         }
         
         //Random Extensions
-        public static NativeArray<T> ToNativeArray<T>(this T[] input, Allocator type) where T : struct {
-            var array = new NativeArray<T>(input.Length, type);
-            for (var i = 0; i < input.Length; i++) {
-                array[i] = input[i];
-            }
-            return array;
-        }
         public static T Random<T>(this IList<T> list) => list[UnityEngine.Random.Range(0, list.Count)];
         //Float Extensions
-        public static float Random(this Vector2 input) => UnityEngine.Random.Range(input.x , input.y);
         public static float[] GenerateCurveArray(this AnimationCurve self, int samplePoints) {
             var returnArray = new float[samplePoints];
             for (var j = 0; j < samplePoints; j++) {
@@ -39,13 +31,6 @@ namespace Boxey.Planets.Core.Static {
             }
             return array;
         }
-        public static int[] ToUnityArray(this NativeArray<int> input) {
-            var array = new int[input.Length];
-            for (var i = 0; i < input.Length; i++) {
-                array[i] = input[i];
-            }
-            return array;
-        }
         //Vector3 Extensions
         public static Vector3 ToVector3(this float3 input) => new(input.x, input.y, input.z);
         public static Vector3[] ToArray(this NativeList<float3> input) {
@@ -55,45 +40,28 @@ namespace Boxey.Planets.Core.Static {
             }
             return array;
         }
-        public static Vector3[] ToUnityArray(this NativeArray<float3> input) {
-            var array = new Vector3[input.Length];
-            for (var i = 0; i < input.Length; i++) {
-                array[i] = new Vector3(input[i].x, input[i].y, input[i].z);
-            }
-            return array;
-        }
     }
 }
 
-public class Singleton<T> : MonoBehaviour where T : Component
-{
-    public static T Instance { get; private set; }
+public class Singleton<T> : MonoBehaviour where T : Component {
+    private static T Instance { get; set; }
 
-    public void Awake()
-    {
-        if (Instance == null)
-        {
+    public void Awake() {
+        if (Instance == null) {
             Instance = this as T;
-        }
-        else
-        {
+        }else {
             Destroy(gameObject);
         }
     }
 }
-public class SingletonPersistent<T> : MonoBehaviour where T : Component
-{
-    public static T Instance { get; private set; }
+public class SingletonPersistent<T> : MonoBehaviour where T : Component {
+    private static T Instance { get; set; }
 
-    public void Awake()
-    {
-        if (Instance == null)
-        {
+    public void Awake() {
+        if (Instance == null) {
             Instance = this as T;
             DontDestroyOnLoad(this);
-        }
-        else
-        {
+        }else {
             Destroy(gameObject);
         }
     }
