@@ -1,5 +1,5 @@
 ![Static Badge](https://img.shields.io/badge/Verson-2022.3.22f1-5300EB?style=for-the-badge&logo=Unity)
-[![Static Badge](https://img.shields.io/badge/Version-0.1.0b-blue?style=for-the-badge)](https://github.com/B0XEY/Unity-Planets/releases)
+[![Static Badge](https://img.shields.io/badge/Version-0.2.0b-blue?style=for-the-badge)](https://github.com/B0XEY/Unity-Planets/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
 
 > [!IMPORTANT]
