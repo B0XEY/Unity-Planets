@@ -46,7 +46,7 @@ namespace Boxey.Planets.Core.Static {
             return data;
         }
         //Node Functions
-        public static float[] GetPlanetNoiseMap(int chunkRes, float3 noisePosition, float planetRadius, float3 center, int nodeScale, int seed, int divisions, PlanetData settings) {
+        public static float4[] GetPlanetNoiseMap(int chunkRes, float3 noisePosition, float planetRadius, float3 center, int nodeScale, int seed, int divisions, PlanetData settings) {
             var mapSize = (chunkRes + 1);
             var arrayLength = mapSize * mapSize * mapSize;
             var layers = settings.NoiseLayers.Count;
@@ -62,7 +62,7 @@ namespace Boxey.Planets.Core.Static {
                 Seed = seed,
                 NoiseLayers = layers,
                 DoNoiseLayers = settings.UseNoise,
-                Map = new NativeArray<float>(arrayLength, Allocator.TempJob, NativeArrayOptions.UninitializedMemory) 
+                Map = new NativeArray<float4>(arrayLength, Allocator.TempJob, NativeArrayOptions.UninitializedMemory) 
             };
             
             var noiseFloatDataOne = new NativeArray<float4>(layers, Allocator.TempJob);
@@ -134,10 +134,10 @@ namespace Boxey.Planets.Core.Static {
             return map;
         }
         //Mesh
-        public static void GetPlanetMeshData(int chunkSize, int voxelScale, int3 centerOffset, float createGate, float valueGate, bool smoothTerrain, float[] noiseMap, float[] modMap, out Vector3[] verticesArray, out int[] trianglesArray) {
+        public static void GetPlanetMeshData(int chunkSize, int voxelScale, int3 centerOffset, float createGate, float valueGate, bool smoothTerrain, float4[] noiseMap, float[] modMap, out Vector3[] verticesArray, out int[] trianglesArray) {
             var verticesList = new NativeList<float3>(Allocator.TempJob);
             var trianglesList = new NativeList<int>(Allocator.TempJob);
-            var noiseMapArray = new NativeArray<float>(noiseMap, Allocator.TempJob);
+            var noiseMapArray = new NativeArray<float4>(noiseMap, Allocator.TempJob);
             var modMapArray = new NativeArray<float>(modMap, Allocator.TempJob);
             var marchingJob = new VoxelJobs.MarchCubes {
                 CubeIntData = new int4(centerOffset, chunkSize),

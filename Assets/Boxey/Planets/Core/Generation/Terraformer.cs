@@ -8,7 +8,7 @@ namespace Boxey.Planets.Core.Generation {
     public class Terraformer : MonoBehaviour {
         private Camera _camera;
         private GameObject _point;
-        private Planet _target;
+        private PlanetaryObject _target;
         private bool _terraforming;
         
         [Header("Terraforming"), Line]
@@ -28,7 +28,7 @@ namespace Boxey.Planets.Core.Generation {
             var ray = _camera.ScreenPointToRay(Input.mousePosition);
             if (Physics.Raycast(ray, out var hit)) {
                 if (hit.transform.name == "Sun" || hit.transform.gameObject.layer != 3) return;
-                _target = hit.transform.parent.GetComponentInParent<Planet>();
+                _target = hit.transform.parent.GetComponentInParent<PlanetaryObject>();
                 if (_target == null) return;
                 _point.transform.position = hit.point;
                 float3 terraformPoint = _point.transform.position;

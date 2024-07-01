@@ -1,4 +1,4 @@
-// Made with Amplify Shader Editor v1.9.2.2
+// Made with Amplify Shader Editor v1.9.5.1
 // Available at the Unity Asset Store - http://u3d.as/y3X 
 Shader "Planet Shader"
 {
@@ -34,8 +34,8 @@ Shader "Planet Shader"
 		//_TessEdgeLength ( "Tess Edge length", Range( 2, 50 ) ) = 16
 		//_TessMaxDisp( "Tess Max Displacement", Float ) = 25
 
-		[HideInInspector][ToggleOff] _SpecularHighlights("Specular Highlights", Float) = 1.0
-		[HideInInspector][ToggleOff] _EnvironmentReflections("Environment Reflections", Float) = 1.0
+		[HideInInspector][ToggleOff] _SpecularHighlights("Specular Highlights", Float) = 1
+		[HideInInspector][ToggleOff] _EnvironmentReflections("Environment Reflections", Float) = 1
 		[HideInInspector][ToggleOff] _ReceiveShadows("Receive Shadows", Float) = 1.0
 
 		[HideInInspector] _QueueOffset("_QueueOffset", Float) = 0
@@ -190,33 +190,44 @@ Shader "Planet Shader"
 
 			HLSLPROGRAM
 
+			
+
 			#define _NORMAL_DROPOFF_TS 1
+			#pragma shader_feature_local _RECEIVE_SHADOWS_OFF
+			#pragma multi_compile_fragment _ _SCREEN_SPACE_OCCLUSION
 			#pragma instancing_options renderinglayer
-			#pragma multi_compile_fragment _ LOD_FADE_CROSSFADE
+			#pragma multi_compile _ LOD_FADE_CROSSFADE
 			#pragma multi_compile_fog
 			#define ASE_FOG 1
 			#define ASE_ABSOLUTE_VERTEX_POS 1
 			#define ASE_SRP_VERSION 140010
 
 
-			#pragma shader_feature_local _RECEIVE_SHADOWS_OFF
-			#pragma shader_feature_local_fragment _SPECULARHIGHLIGHTS_OFF
-			#pragma shader_feature_local_fragment _ENVIRONMENTREFLECTIONS_OFF
+			
 
 			#pragma multi_compile _ _MAIN_LIGHT_SHADOWS _MAIN_LIGHT_SHADOWS_CASCADE _MAIN_LIGHT_SHADOWS_SCREEN
 			#pragma multi_compile _ _ADDITIONAL_LIGHTS_VERTEX _ADDITIONAL_LIGHTS
+
+			
+            #pragma multi_compile _ EVALUATE_SH_MIXED EVALUATE_SH_VERTEX
+		
+
 			#pragma multi_compile_fragment _ _ADDITIONAL_LIGHT_SHADOWS
 			#pragma multi_compile_fragment _ _REFLECTION_PROBE_BLENDING
 			#pragma multi_compile_fragment _ _REFLECTION_PROBE_BOX_PROJECTION
+
 			
+
 			
 			#pragma multi_compile_fragment _ _SHADOWS_SOFT _SHADOWS_SOFT_LOW _SHADOWS_SOFT_MEDIUM _SHADOWS_SOFT_HIGH
-		
-			#pragma multi_compile_fragment _ _SCREEN_SPACE_OCCLUSION
+           
+
 			#pragma multi_compile_fragment _ _DBUFFER_MRT1 _DBUFFER_MRT2 _DBUFFER_MRT3
-			#pragma multi_compile_fragment _ _LIGHT_LAYERS
+			#pragma multi_compile _ _LIGHT_LAYERS
 			#pragma multi_compile_fragment _ _LIGHT_COOKIES
 			#pragma multi_compile _ _FORWARD_PLUS
+
+			
 
 			#pragma multi_compile _ LIGHTMAP_SHADOW_MIXING
 			#pragma multi_compile _ SHADOWS_SHADOWMASK
@@ -224,12 +235,27 @@ Shader "Planet Shader"
 			#pragma multi_compile _ LIGHTMAP_ON
 			#pragma multi_compile _ DYNAMICLIGHTMAP_ON
 			#pragma multi_compile_fragment _ DEBUG_DISPLAY
-			#pragma multi_compile_fragment _ _WRITE_RENDERING_LAYERS
 
 			#pragma vertex vert
 			#pragma fragment frag
 
+			#if defined(_SPECULAR_SETUP) && defined(_ASE_LIGHTING_SIMPLE)
+				#define _SPECULAR_COLOR 1
+			#endif
+
 			#define SHADERPASS SHADERPASS_FORWARD
+
+			
+            #if ASE_SRP_VERSION >=140007
+			#include_with_pragmas "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DOTS.hlsl"
+			#endif
+		
+
+			
+			#if ASE_SRP_VERSION >=140007
+			#include_with_pragmas "Packages/com.unity.render-pipelines.universal/ShaderLibrary/RenderingLayers.hlsl"
+			#endif
+		
 
 			#include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Color.hlsl"
 			#include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Texture.hlsl"
@@ -237,6 +263,17 @@ Shader "Planet Shader"
 			#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
 			#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Input.hlsl"
 			#include "Packages/com.unity.render-pipelines.core/ShaderLibrary/TextureStack.hlsl"
+
+			
+            #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/FoveatedRendering.hlsl"
+           
+
+			
+            #if ASE_SRP_VERSION >=140009
+			#include_with_pragmas "Packages/com.unity.render-pipelines.core/ShaderLibrary/FoveatedRenderingKeywords.hlsl"
+			#endif
+		
+
 			#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Shadows.hlsl"
 			#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/ShaderGraphFunctions.hlsl"
 			#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DBuffer.hlsl"
@@ -562,7 +599,7 @@ Shader "Planet Shader"
 				UNITY_SETUP_INSTANCE_ID(IN);
 				UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(IN);
 
-				#ifdef LOD_FADE_CROSSFADE
+				#if defined(LOD_FADE_CROSSFADE)
 					LODFadeCrossFade( IN.positionCS );
 				#endif
 
@@ -611,7 +648,9 @@ Shader "Planet Shader"
 				float4 Sand_Color88 = lerpResult23;
 				float simplePerlin3D28 = snoise( WorldPosition*( _GrassWarping * 0.0005 ) );
 				simplePerlin3D28 = simplePerlin3D28*0.5 + 0.5;
-				float4 lerpResult22 = lerp( _Grass , _Dark_Grass , simplePerlin3D28);
+				float simplePerlin3D201 = snoise( WorldPosition*0.0025 );
+				simplePerlin3D201 = simplePerlin3D201*0.5 + 0.5;
+				float4 lerpResult22 = lerp( _Grass , _Dark_Grass , step( simplePerlin3D28 , simplePerlin3D201 ));
 				float4 Grass_Color85 = lerpResult22;
 				float4 Terrain_Base_Color94 = ( ( simplePerlin3D11 + distance( Planet_Center77 , WorldPosition ) ) <= _Sand_Height ? Sand_Color88 : Grass_Color85 );
 				float4 Terrain_Color100 = ( Steepness74 <= _Steepness_Threshold ? Steep_Color91 : Terrain_Base_Color94 );
@@ -727,7 +766,11 @@ Shader "Planet Shader"
 					ApplyDecalToSurfaceData(IN.positionCS, surfaceData, inputData);
 				#endif
 
-				half4 color = UniversalFragmentPBR( inputData, surfaceData);
+				#ifdef _ASE_LIGHTING_SIMPLE
+					half4 color = UniversalFragmentBlinnPhong( inputData, surfaceData);
+				#else
+					half4 color = UniversalFragmentPBR( inputData, surfaceData);
+				#endif
 
 				#ifdef ASE_TRANSMISSION
 				{
@@ -870,20 +913,34 @@ Shader "Planet Shader"
 
 			HLSLPROGRAM
 
+			
+
 			#define _NORMAL_DROPOFF_TS 1
 			#pragma multi_compile_instancing
-			#pragma multi_compile_fragment _ LOD_FADE_CROSSFADE
+			#pragma multi_compile _ LOD_FADE_CROSSFADE
 			#define ASE_FOG 1
 			#define ASE_ABSOLUTE_VERTEX_POS 1
 			#define ASE_SRP_VERSION 140010
 
 
-			#pragma vertex vert
-			#pragma fragment frag
+			
 
 			#pragma multi_compile_vertex _ _CASTING_PUNCTUAL_LIGHT_SHADOW
 
+			#pragma vertex vert
+			#pragma fragment frag
+
+			#if defined(_SPECULAR_SETUP) && defined(_ASE_LIGHTING_SIMPLE)
+				#define _SPECULAR_COLOR 1
+			#endif
+
 			#define SHADERPASS SHADERPASS_SHADOWCASTER
+
+			
+            #if ASE_SRP_VERSION >=140007
+			#include_with_pragmas "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DOTS.hlsl"
+			#endif
+		
 
 			#include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Color.hlsl"
 			#include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Texture.hlsl"
@@ -891,6 +948,17 @@ Shader "Planet Shader"
 			#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
 			#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Input.hlsl"
 			#include "Packages/com.unity.render-pipelines.core/ShaderLibrary/TextureStack.hlsl"
+
+			
+            #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/FoveatedRendering.hlsl"
+           
+
+			
+            #if ASE_SRP_VERSION >=140009
+			#include_with_pragmas "Packages/com.unity.render-pipelines.core/ShaderLibrary/FoveatedRenderingKeywords.hlsl"
+			#endif
+		
+
 			#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/ShaderGraphFunctions.hlsl"
 			#include "Packages/com.unity.render-pipelines.universal/Editor/ShaderGraph/Includes/ShaderPass.hlsl"
 
@@ -1161,7 +1229,7 @@ Shader "Planet Shader"
 					#endif
 				#endif
 
-				#ifdef LOD_FADE_CROSSFADE
+				#if defined(LOD_FADE_CROSSFADE)
 					LODFadeCrossFade( IN.positionCS );
 				#endif
 
@@ -1187,18 +1255,32 @@ Shader "Planet Shader"
 
 			HLSLPROGRAM
 
+			
+
 			#define _NORMAL_DROPOFF_TS 1
 			#pragma multi_compile_instancing
-			#pragma multi_compile_fragment _ LOD_FADE_CROSSFADE
+			#pragma multi_compile _ LOD_FADE_CROSSFADE
 			#define ASE_FOG 1
 			#define ASE_ABSOLUTE_VERTEX_POS 1
 			#define ASE_SRP_VERSION 140010
 
 
+			
+
 			#pragma vertex vert
 			#pragma fragment frag
 
+			#if defined(_SPECULAR_SETUP) && defined(_ASE_LIGHTING_SIMPLE)
+				#define _SPECULAR_COLOR 1
+			#endif
+
 			#define SHADERPASS SHADERPASS_DEPTHONLY
+
+			
+            #if ASE_SRP_VERSION >=140007
+			#include_with_pragmas "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DOTS.hlsl"
+			#endif
+		
 
 			#include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Color.hlsl"
 			#include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Texture.hlsl"
@@ -1206,6 +1288,17 @@ Shader "Planet Shader"
 			#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
 			#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Input.hlsl"
 			#include "Packages/com.unity.render-pipelines.core/ShaderLibrary/TextureStack.hlsl"
+
+			
+            #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/FoveatedRendering.hlsl"
+           
+
+			
+            #if ASE_SRP_VERSION >=140009
+			#include_with_pragmas "Packages/com.unity.render-pipelines.core/ShaderLibrary/FoveatedRenderingKeywords.hlsl"
+			#endif
+		
+
 			#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/ShaderGraphFunctions.hlsl"
 			#include "Packages/com.unity.render-pipelines.universal/Editor/ShaderGraph/Includes/ShaderPass.hlsl"
 
@@ -1450,7 +1543,7 @@ Shader "Planet Shader"
 					clip(Alpha - AlphaClipThreshold);
 				#endif
 
-				#ifdef LOD_FADE_CROSSFADE
+				#if defined(LOD_FADE_CROSSFADE)
 					LODFadeCrossFade( IN.positionCS );
 				#endif
 
@@ -1473,17 +1566,19 @@ Shader "Planet Shader"
 			Cull Off
 
 			HLSLPROGRAM
-
 			#define _NORMAL_DROPOFF_TS 1
 			#define ASE_FOG 1
 			#define ASE_ABSOLUTE_VERTEX_POS 1
 			#define ASE_SRP_VERSION 140010
 
+			#pragma shader_feature EDITOR_VISUALIZATION
 
 			#pragma vertex vert
 			#pragma fragment frag
 
-			#pragma shader_feature EDITOR_VISUALIZATION
+			#if defined(_SPECULAR_SETUP) && defined(_ASE_LIGHTING_SIMPLE)
+				#define _SPECULAR_COLOR 1
+			#endif
 
 			#define SHADERPASS SHADERPASS_META
 
@@ -1493,6 +1588,17 @@ Shader "Planet Shader"
 			#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
 			#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Input.hlsl"
 			#include "Packages/com.unity.render-pipelines.core/ShaderLibrary/TextureStack.hlsl"
+
+			
+            #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/FoveatedRendering.hlsl"
+           
+
+			
+            #if ASE_SRP_VERSION >=140009
+			#include_with_pragmas "Packages/com.unity.render-pipelines.core/ShaderLibrary/FoveatedRenderingKeywords.hlsl"
+			#endif
+		
+
 			#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/ShaderGraphFunctions.hlsl"
 			#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/MetaInput.hlsl"
 			#include "Packages/com.unity.render-pipelines.universal/Editor/ShaderGraph/Includes/ShaderPass.hlsl"
@@ -1810,7 +1916,9 @@ Shader "Planet Shader"
 				float4 Sand_Color88 = lerpResult23;
 				float simplePerlin3D28 = snoise( WorldPosition*( _GrassWarping * 0.0005 ) );
 				simplePerlin3D28 = simplePerlin3D28*0.5 + 0.5;
-				float4 lerpResult22 = lerp( _Grass , _Dark_Grass , simplePerlin3D28);
+				float simplePerlin3D201 = snoise( WorldPosition*0.0025 );
+				simplePerlin3D201 = simplePerlin3D201*0.5 + 0.5;
+				float4 lerpResult22 = lerp( _Grass , _Dark_Grass , step( simplePerlin3D28 , simplePerlin3D201 ));
 				float4 Grass_Color85 = lerpResult22;
 				float4 Terrain_Base_Color94 = ( ( simplePerlin3D11 + distance( Planet_Center77 , WorldPosition ) ) <= _Sand_Height ? Sand_Color88 : Grass_Color85 );
 				float4 Terrain_Color100 = ( Steepness74 <= _Steepness_Threshold ? Steep_Color91 : Terrain_Base_Color94 );
@@ -1862,6 +1970,10 @@ Shader "Planet Shader"
 			#pragma vertex vert
 			#pragma fragment frag
 
+			#if defined(_SPECULAR_SETUP) && defined(_ASE_LIGHTING_SIMPLE)
+				#define _SPECULAR_COLOR 1
+			#endif
+
 			#define SHADERPASS SHADERPASS_2D
 
 			#include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Color.hlsl"
@@ -1870,6 +1982,17 @@ Shader "Planet Shader"
 			#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
 			#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Input.hlsl"
 			#include "Packages/com.unity.render-pipelines.core/ShaderLibrary/TextureStack.hlsl"
+
+			
+            #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/FoveatedRendering.hlsl"
+           
+
+			
+            #if ASE_SRP_VERSION >=140009
+			#include_with_pragmas "Packages/com.unity.render-pipelines.core/ShaderLibrary/FoveatedRenderingKeywords.hlsl"
+			#endif
+		
+
 			#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/ShaderGraphFunctions.hlsl"
 			#include "Packages/com.unity.render-pipelines.universal/Editor/ShaderGraph/Includes/ShaderPass.hlsl"
 
@@ -2159,7 +2282,9 @@ Shader "Planet Shader"
 				float4 Sand_Color88 = lerpResult23;
 				float simplePerlin3D28 = snoise( WorldPosition*( _GrassWarping * 0.0005 ) );
 				simplePerlin3D28 = simplePerlin3D28*0.5 + 0.5;
-				float4 lerpResult22 = lerp( _Grass , _Dark_Grass , simplePerlin3D28);
+				float simplePerlin3D201 = snoise( WorldPosition*0.0025 );
+				simplePerlin3D201 = simplePerlin3D201*0.5 + 0.5;
+				float4 lerpResult22 = lerp( _Grass , _Dark_Grass , step( simplePerlin3D28 , simplePerlin3D201 ));
 				float4 Grass_Color85 = lerpResult22;
 				float4 Terrain_Base_Color94 = ( ( simplePerlin3D11 + distance( Planet_Center77 , WorldPosition ) ) <= _Sand_Height ? Sand_Color88 : Grass_Color85 );
 				float4 Terrain_Color100 = ( Steepness74 <= _Steepness_Threshold ? Steep_Color91 : Terrain_Base_Color94 );
@@ -2194,20 +2319,43 @@ Shader "Planet Shader"
 
 			HLSLPROGRAM
 
+			
+
+			
+
 			#define _NORMAL_DROPOFF_TS 1
 			#pragma multi_compile_instancing
-			#pragma multi_compile_fragment _ LOD_FADE_CROSSFADE
+			#pragma multi_compile _ LOD_FADE_CROSSFADE
 			#define ASE_FOG 1
 			#define ASE_ABSOLUTE_VERTEX_POS 1
 			#define ASE_SRP_VERSION 140010
 
 
+			
+
+			
+
 			#pragma vertex vert
 			#pragma fragment frag
 
-			#pragma multi_compile_fragment _ _WRITE_RENDERING_LAYERS
+			#if defined(_SPECULAR_SETUP) && defined(_ASE_LIGHTING_SIMPLE)
+				#define _SPECULAR_COLOR 1
+			#endif
 
 			#define SHADERPASS SHADERPASS_DEPTHNORMALSONLY
+			//#define SHADERPASS SHADERPASS_DEPTHNORMALS
+
+			
+            #if ASE_SRP_VERSION >=140007
+			#include_with_pragmas "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DOTS.hlsl"
+			#endif
+		
+
+			
+			#if ASE_SRP_VERSION >=140007
+			#include_with_pragmas "Packages/com.unity.render-pipelines.universal/ShaderLibrary/RenderingLayers.hlsl"
+			#endif
+		
 
 			#include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Color.hlsl"
 			#include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Texture.hlsl"
@@ -2215,6 +2363,17 @@ Shader "Planet Shader"
 			#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
 			#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Input.hlsl"
 			#include "Packages/com.unity.render-pipelines.core/ShaderLibrary/TextureStack.hlsl"
+
+			
+            #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/FoveatedRendering.hlsl"
+           
+
+			
+            #if ASE_SRP_VERSION >=140009
+			#include_with_pragmas "Packages/com.unity.render-pipelines.core/ShaderLibrary/FoveatedRenderingKeywords.hlsl"
+			#endif
+		
+
 			#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/ShaderGraphFunctions.hlsl"
 			#include "Packages/com.unity.render-pipelines.universal/Editor/ShaderGraph/Includes/ShaderPass.hlsl"
 
@@ -2470,6 +2629,7 @@ Shader "Planet Shader"
 				float3 Normal = float3(0, 0, 1);
 				float Alpha = 1;
 				float AlphaClipThreshold = 0.5;
+
 				#ifdef ASE_DEPTH_WRITE_ON
 					float DepthValue = IN.positionCS.z;
 				#endif
@@ -2478,7 +2638,7 @@ Shader "Planet Shader"
 					clip(Alpha - AlphaClipThreshold);
 				#endif
 
-				#ifdef LOD_FADE_CROSSFADE
+				#if defined(LOD_FADE_CROSSFADE)
 					LODFadeCrossFade( IN.positionCS );
 				#endif
 
@@ -2532,41 +2692,64 @@ Shader "Planet Shader"
 
 			HLSLPROGRAM
 
+			
+
 			#define _NORMAL_DROPOFF_TS 1
+			#pragma shader_feature_local _RECEIVE_SHADOWS_OFF
 			#pragma instancing_options renderinglayer
-			#pragma multi_compile_fragment _ LOD_FADE_CROSSFADE
+			#pragma multi_compile _ LOD_FADE_CROSSFADE
 			#pragma multi_compile_fog
 			#define ASE_FOG 1
 			#define ASE_ABSOLUTE_VERTEX_POS 1
 			#define ASE_SRP_VERSION 140010
 
 
-			#pragma shader_feature_local _RECEIVE_SHADOWS_OFF
-			#pragma shader_feature_local_fragment _SPECULARHIGHLIGHTS_OFF
-			#pragma shader_feature_local_fragment _ENVIRONMENTREFLECTIONS_OFF
+			
 
 			#pragma multi_compile _ _MAIN_LIGHT_SHADOWS _MAIN_LIGHT_SHADOWS_CASCADE _MAIN_LIGHT_SHADOWS_SCREEN
 			#pragma multi_compile_fragment _ _REFLECTION_PROBE_BLENDING
 			#pragma multi_compile_fragment _ _REFLECTION_PROBE_BOX_PROJECTION
+
 			
+
 			
 			#pragma multi_compile_fragment _ _SHADOWS_SOFT _SHADOWS_SOFT_LOW _SHADOWS_SOFT_MEDIUM _SHADOWS_SOFT_HIGH
-		
+           
+
 			#pragma multi_compile_fragment _ _DBUFFER_MRT1 _DBUFFER_MRT2 _DBUFFER_MRT3
+			#pragma multi_compile_fragment _ _GBUFFER_NORMALS_OCT
 			#pragma multi_compile_fragment _ _RENDER_PASS_ENABLED
+      
+			
 
 			#pragma multi_compile _ LIGHTMAP_SHADOW_MIXING
+			#pragma multi_compile _ _MIXED_LIGHTING_SUBTRACTIVE
 			#pragma multi_compile _ SHADOWS_SHADOWMASK
 			#pragma multi_compile _ DIRLIGHTMAP_COMBINED
 			#pragma multi_compile _ LIGHTMAP_ON
 			#pragma multi_compile _ DYNAMICLIGHTMAP_ON
-			#pragma multi_compile_fragment _ _GBUFFER_NORMALS_OCT
-			#pragma multi_compile_fragment _ _WRITE_RENDERING_LAYERS
+			#pragma multi_compile_fragment _ DEBUG_DISPLAY
 
 			#pragma vertex vert
 			#pragma fragment frag
 
+			#if defined(_SPECULAR_SETUP) && defined(_ASE_LIGHTING_SIMPLE)
+				#define _SPECULAR_COLOR 1
+			#endif
+
 			#define SHADERPASS SHADERPASS_GBUFFER
+
+			
+            #if ASE_SRP_VERSION >=140007
+			#include_with_pragmas "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DOTS.hlsl"
+			#endif
+		
+
+			
+			#if ASE_SRP_VERSION >=140007
+			#include_with_pragmas "Packages/com.unity.render-pipelines.universal/ShaderLibrary/RenderingLayers.hlsl"
+			#endif
+		
 
 			#include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Color.hlsl"
 			#include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Texture.hlsl"
@@ -2574,6 +2757,17 @@ Shader "Planet Shader"
 			#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
 			#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Input.hlsl"
 			#include "Packages/com.unity.render-pipelines.core/ShaderLibrary/TextureStack.hlsl"
+
+			
+            #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/FoveatedRendering.hlsl"
+           
+
+			
+            #if ASE_SRP_VERSION >=140009
+			#include_with_pragmas "Packages/com.unity.render-pipelines.core/ShaderLibrary/FoveatedRenderingKeywords.hlsl"
+			#endif
+		
+
 			#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Shadows.hlsl"
 			#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/ShaderGraphFunctions.hlsl"
 			#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DBuffer.hlsl"
@@ -2892,7 +3086,7 @@ Shader "Planet Shader"
 				UNITY_SETUP_INSTANCE_ID(IN);
 				UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(IN);
 
-				#ifdef LOD_FADE_CROSSFADE
+				#if defined(LOD_FADE_CROSSFADE)
 					LODFadeCrossFade( IN.positionCS );
 				#endif
 
@@ -2943,7 +3137,9 @@ Shader "Planet Shader"
 				float4 Sand_Color88 = lerpResult23;
 				float simplePerlin3D28 = snoise( WorldPosition*( _GrassWarping * 0.0005 ) );
 				simplePerlin3D28 = simplePerlin3D28*0.5 + 0.5;
-				float4 lerpResult22 = lerp( _Grass , _Dark_Grass , simplePerlin3D28);
+				float simplePerlin3D201 = snoise( WorldPosition*0.0025 );
+				simplePerlin3D201 = simplePerlin3D201*0.5 + 0.5;
+				float4 lerpResult22 = lerp( _Grass , _Dark_Grass , step( simplePerlin3D28 , simplePerlin3D201 ));
 				float4 Grass_Color85 = lerpResult22;
 				float4 Terrain_Base_Color94 = ( ( simplePerlin3D11 + distance( Planet_Center77 , WorldPosition ) ) <= _Sand_Height ? Sand_Color88 : Grass_Color85 );
 				float4 Terrain_Color100 = ( Steepness74 <= _Steepness_Threshold ? Steep_Color91 : Terrain_Base_Color94 );
@@ -3071,14 +3267,22 @@ Shader "Planet Shader"
 
 			HLSLPROGRAM
 
+			
+
 			#define _NORMAL_DROPOFF_TS 1
 			#define ASE_FOG 1
 			#define ASE_ABSOLUTE_VERTEX_POS 1
 			#define ASE_SRP_VERSION 140010
 
 
+			
+
 			#pragma vertex vert
 			#pragma fragment frag
+
+			#if defined(_SPECULAR_SETUP) && defined(_ASE_LIGHTING_SIMPLE)
+				#define _SPECULAR_COLOR 1
+			#endif
 
 			#define SCENESELECTIONPASS 1
 
@@ -3092,7 +3296,25 @@ Shader "Planet Shader"
 			#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
 			#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Input.hlsl"
 			#include "Packages/com.unity.render-pipelines.core/ShaderLibrary/TextureStack.hlsl"
+
+			
+            #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/FoveatedRendering.hlsl"
+           
+
+			
+            #if ASE_SRP_VERSION >=140009
+			#include_with_pragmas "Packages/com.unity.render-pipelines.core/ShaderLibrary/FoveatedRenderingKeywords.hlsl"
+			#endif
+		
+
 			#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/ShaderGraphFunctions.hlsl"
+
+			
+            #if ASE_SRP_VERSION >=140007
+			#include_with_pragmas "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DOTS.hlsl"
+			#endif
+		
+
 			#include "Packages/com.unity.render-pipelines.universal/Editor/ShaderGraph/Includes/ShaderPass.hlsl"
 
 			
@@ -3321,14 +3543,22 @@ Shader "Planet Shader"
 
 			HLSLPROGRAM
 
+			
+
 			#define _NORMAL_DROPOFF_TS 1
 			#define ASE_FOG 1
 			#define ASE_ABSOLUTE_VERTEX_POS 1
 			#define ASE_SRP_VERSION 140010
 
 
+			
+
 			#pragma vertex vert
 			#pragma fragment frag
+
+			#if defined(_SPECULAR_SETUP) && defined(_ASE_LIGHTING_SIMPLE)
+				#define _SPECULAR_COLOR 1
+			#endif
 
 		    #define SCENEPICKINGPASS 1
 
@@ -3342,7 +3572,25 @@ Shader "Planet Shader"
 			#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
 			#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Input.hlsl"
 			#include "Packages/com.unity.render-pipelines.core/ShaderLibrary/TextureStack.hlsl"
+
+			
+            #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/FoveatedRendering.hlsl"
+           
+
+			
+            #if ASE_SRP_VERSION >=140009
+			#include_with_pragmas "Packages/com.unity.render-pipelines.core/ShaderLibrary/FoveatedRenderingKeywords.hlsl"
+			#endif
+		
+
 			#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/ShaderGraphFunctions.hlsl"
+
+			
+            #if ASE_SRP_VERSION >=140007
+			#include_with_pragmas "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DOTS.hlsl"
+			#endif
+		
+
 			#include "Packages/com.unity.render-pipelines.universal/Editor/ShaderGraph/Includes/ShaderPass.hlsl"
 
 			
@@ -3567,23 +3815,13 @@ Shader "Planet Shader"
 	Fallback Off
 }
 /*ASEBEGIN
-Version=19202
+Version=19501
 Node;AmplifyShaderEditor.CommentaryNode;99;-3213.613,-1666.993;Inherit;False;1015.872;384.6555;;6;100;95;92;51;43;75;Terrain Color;1,1,1,1;0;0
 Node;AmplifyShaderEditor.CommentaryNode;93;-3215.176,-1181.17;Inherit;False;1185.274;664.1378;;11;94;89;86;17;15;16;79;67;11;180;181;Terrain Base Color;1,1,1,1;0;0
 Node;AmplifyShaderEditor.CommentaryNode;90;-3243.312,-4.563942;Inherit;False;1016.061;643.3829;;7;49;48;45;44;91;46;106;Steep Color;1,1,1,1;0;0
 Node;AmplifyShaderEditor.CommentaryNode;87;-3261.175,717.4017;Inherit;False;1033.516;661.99;;7;29;27;18;24;88;23;105;Sand Color;1,1,1,1;0;0
-Node;AmplifyShaderEditor.CommentaryNode;82;-2185.427,-5.215159;Inherit;False;1040.824;659.3424;;10;25;19;28;14;85;22;107;109;110;136;Grass Color;1,1,1,1;0;0
+Node;AmplifyShaderEditor.CommentaryNode;82;-2185.427,-5.215159;Inherit;False;1040.824;659.3424;;13;25;19;28;14;85;22;107;195;196;197;131;199;200;Grass Color;1,1,1,1;0;0
 Node;AmplifyShaderEditor.CommentaryNode;73;-3209.556,-438.1595;Inherit;False;1252.456;323.253;Comment;9;193;78;56;102;55;53;74;59;58;Get Steepness;1,1,1,1;0;0
-Node;AmplifyShaderEditor.TemplateMultiPassMasterNode;0;0,0;Float;False;False;-1;2;UnityEditor.ShaderGraphLitGUI;0;12;New Amplify Shader;94348b07e5e8bab40bd6c8a1e3df54cd;True;ExtraPrePass;0;0;ExtraPrePass;5;False;False;False;False;False;False;False;False;False;False;False;False;True;0;False;;False;True;0;False;;False;False;False;False;False;False;False;False;False;True;False;0;False;;255;False;;255;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;False;True;1;False;;True;3;False;;True;True;0;False;;0;False;;True;4;RenderPipeline=UniversalPipeline;RenderType=Opaque=RenderType;Queue=Geometry=Queue=0;UniversalMaterialType=Lit;True;5;True;12;all;0;False;True;1;1;False;;0;False;;0;1;False;;0;False;;False;False;False;False;False;False;False;False;False;False;False;False;True;0;False;;False;True;True;True;True;True;0;False;;False;False;False;False;False;False;False;True;False;0;False;;255;False;;255;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;False;True;1;False;;True;3;False;;True;True;0;False;;0;False;;True;0;False;False;0;;0;0;Standard;0;False;0
-Node;AmplifyShaderEditor.TemplateMultiPassMasterNode;2;0,0;Float;False;False;-1;2;UnityEditor.ShaderGraphLitGUI;0;12;New Amplify Shader;94348b07e5e8bab40bd6c8a1e3df54cd;True;ShadowCaster;0;2;ShadowCaster;0;False;False;False;False;False;False;False;False;False;False;False;False;True;0;False;;False;True;0;False;;False;False;False;False;False;False;False;False;False;True;False;0;False;;255;False;;255;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;False;True;1;False;;True;3;False;;True;True;0;False;;0;False;;True;4;RenderPipeline=UniversalPipeline;RenderType=Opaque=RenderType;Queue=Geometry=Queue=0;UniversalMaterialType=Lit;True;5;True;12;all;0;False;False;False;False;False;False;False;False;False;False;False;False;True;0;False;;False;False;False;True;False;False;False;False;0;False;;False;False;False;False;False;False;False;False;False;True;1;False;;True;3;False;;False;True;1;LightMode=ShadowCaster;False;False;0;;0;0;Standard;0;False;0
-Node;AmplifyShaderEditor.TemplateMultiPassMasterNode;3;0,0;Float;False;False;-1;2;UnityEditor.ShaderGraphLitGUI;0;12;New Amplify Shader;94348b07e5e8bab40bd6c8a1e3df54cd;True;DepthOnly;0;3;DepthOnly;0;False;False;False;False;False;False;False;False;False;False;False;False;True;0;False;;False;True;0;False;;False;False;False;False;False;False;False;False;False;True;False;0;False;;255;False;;255;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;False;True;1;False;;True;3;False;;True;True;0;False;;0;False;;True;4;RenderPipeline=UniversalPipeline;RenderType=Opaque=RenderType;Queue=Geometry=Queue=0;UniversalMaterialType=Lit;True;5;True;12;all;0;False;False;False;False;False;False;False;False;False;False;False;False;True;0;False;;False;False;False;True;True;False;False;False;0;False;;False;False;False;False;False;False;False;False;False;True;1;False;;False;False;True;1;LightMode=DepthOnly;False;False;0;;0;0;Standard;0;False;0
-Node;AmplifyShaderEditor.TemplateMultiPassMasterNode;4;0,0;Float;False;False;-1;2;UnityEditor.ShaderGraphLitGUI;0;12;New Amplify Shader;94348b07e5e8bab40bd6c8a1e3df54cd;True;Meta;0;4;Meta;0;False;False;False;False;False;False;False;False;False;False;False;False;True;0;False;;False;True;0;False;;False;False;False;False;False;False;False;False;False;True;False;0;False;;255;False;;255;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;False;True;1;False;;True;3;False;;True;True;0;False;;0;False;;True;4;RenderPipeline=UniversalPipeline;RenderType=Opaque=RenderType;Queue=Geometry=Queue=0;UniversalMaterialType=Lit;True;5;True;12;all;0;False;False;False;False;False;False;False;False;False;False;False;False;False;False;True;2;False;;False;False;False;False;False;False;False;False;False;False;False;False;False;False;True;1;LightMode=Meta;False;False;0;;0;0;Standard;0;False;0
-Node;AmplifyShaderEditor.TemplateMultiPassMasterNode;5;0,0;Float;False;False;-1;2;UnityEditor.ShaderGraphLitGUI;0;12;New Amplify Shader;94348b07e5e8bab40bd6c8a1e3df54cd;True;Universal2D;0;5;Universal2D;0;False;False;False;False;False;False;False;False;False;False;False;False;True;0;False;;False;True;0;False;;False;False;False;False;False;False;False;False;False;True;False;0;False;;255;False;;255;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;False;True;1;False;;True;3;False;;True;True;0;False;;0;False;;True;4;RenderPipeline=UniversalPipeline;RenderType=Opaque=RenderType;Queue=Geometry=Queue=0;UniversalMaterialType=Lit;True;5;True;12;all;0;False;True;1;1;False;;0;False;;1;1;False;;0;False;;False;False;False;False;False;False;False;False;False;False;False;False;False;False;True;True;True;True;True;0;False;;False;False;False;False;False;False;False;False;False;True;1;False;;True;3;False;;True;True;0;False;;0;False;;True;1;LightMode=Universal2D;False;False;0;;0;0;Standard;0;False;0
-Node;AmplifyShaderEditor.TemplateMultiPassMasterNode;6;0,0;Float;False;False;-1;2;UnityEditor.ShaderGraphLitGUI;0;12;New Amplify Shader;94348b07e5e8bab40bd6c8a1e3df54cd;True;DepthNormals;0;6;DepthNormals;0;False;False;False;False;False;False;False;False;False;False;False;False;True;0;False;;False;True;0;False;;False;False;False;False;False;False;False;False;False;True;False;0;False;;255;False;;255;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;False;True;1;False;;True;3;False;;True;True;0;False;;0;False;;True;4;RenderPipeline=UniversalPipeline;RenderType=Opaque=RenderType;Queue=Geometry=Queue=0;UniversalMaterialType=Lit;True;5;True;12;all;0;False;True;1;1;False;;0;False;;0;1;False;;0;False;;False;False;False;False;False;False;False;False;False;False;False;False;False;False;False;False;False;False;False;False;False;False;False;False;True;1;False;;True;3;False;;False;True;1;LightMode=DepthNormals;False;False;0;;0;0;Standard;0;False;0
-Node;AmplifyShaderEditor.TemplateMultiPassMasterNode;7;0,0;Float;False;False;-1;2;UnityEditor.ShaderGraphLitGUI;0;12;New Amplify Shader;94348b07e5e8bab40bd6c8a1e3df54cd;True;GBuffer;0;7;GBuffer;0;False;False;False;False;False;False;False;False;False;False;False;False;True;0;False;;False;True;0;False;;False;False;False;False;False;False;False;False;False;True;False;0;False;;255;False;;255;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;False;True;1;False;;True;3;False;;True;True;0;False;;0;False;;True;4;RenderPipeline=UniversalPipeline;RenderType=Opaque=RenderType;Queue=Geometry=Queue=0;UniversalMaterialType=Lit;True;5;True;12;all;0;False;True;1;1;False;;0;False;;1;1;False;;0;False;;False;False;False;False;False;False;False;False;False;False;False;False;False;False;True;True;True;True;True;0;False;;False;False;False;False;False;False;False;True;False;0;False;;255;False;;255;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;False;True;1;False;;True;3;False;;True;True;0;False;;0;False;;True;1;LightMode=UniversalGBuffer;False;False;0;;0;0;Standard;0;False;0
-Node;AmplifyShaderEditor.TemplateMultiPassMasterNode;8;0,0;Float;False;False;-1;2;UnityEditor.ShaderGraphLitGUI;0;12;New Amplify Shader;94348b07e5e8bab40bd6c8a1e3df54cd;True;SceneSelectionPass;0;8;SceneSelectionPass;0;False;False;False;False;False;False;False;False;False;False;False;False;True;0;False;;False;True;0;False;;False;False;False;False;False;False;False;False;False;True;False;0;False;;255;False;;255;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;False;True;1;False;;True;3;False;;True;True;0;False;;0;False;;True;4;RenderPipeline=UniversalPipeline;RenderType=Opaque=RenderType;Queue=Geometry=Queue=0;UniversalMaterialType=Lit;True;5;True;12;all;0;False;False;False;False;False;False;False;False;False;False;False;False;True;0;False;;False;True;2;False;;False;False;False;False;False;False;False;False;False;False;False;False;False;False;True;1;LightMode=SceneSelectionPass;False;False;0;;0;0;Standard;0;False;0
-Node;AmplifyShaderEditor.TemplateMultiPassMasterNode;9;0,0;Float;False;False;-1;2;UnityEditor.ShaderGraphLitGUI;0;12;New Amplify Shader;94348b07e5e8bab40bd6c8a1e3df54cd;True;ScenePickingPass;0;9;ScenePickingPass;0;False;False;False;False;False;False;False;False;False;False;False;False;True;0;False;;False;True;0;False;;False;False;False;False;False;False;False;False;False;True;False;0;False;;255;False;;255;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;False;True;1;False;;True;3;False;;True;True;0;False;;0;False;;True;4;RenderPipeline=UniversalPipeline;RenderType=Opaque=RenderType;Queue=Geometry=Queue=0;UniversalMaterialType=Lit;True;5;True;12;all;0;False;False;False;False;False;False;False;False;False;False;False;False;True;0;False;;False;False;False;False;False;False;False;False;False;False;False;False;False;False;False;False;True;1;LightMode=Picking;False;False;0;;0;0;Standard;0;False;0
-Node;AmplifyShaderEditor.TemplateMultiPassMasterNode;1;222.5646,-161.5493;Float;False;True;-1;2;UnityEditor.ShaderGraphLitGUI;0;12;Planet Shader;94348b07e5e8bab40bd6c8a1e3df54cd;True;Forward;0;1;Forward;21;False;False;False;False;False;False;False;False;False;False;False;False;True;0;False;;False;True;0;False;;False;False;False;False;False;False;False;False;False;True;False;0;False;;255;False;;255;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;False;True;1;False;;True;3;False;;True;True;0;False;;0;False;;True;4;RenderPipeline=UniversalPipeline;RenderType=Opaque=RenderType;Queue=Geometry=Queue=0;UniversalMaterialType=Lit;True;5;True;12;all;0;False;True;1;1;False;;0;False;;1;1;False;;0;False;;False;False;False;False;False;False;False;False;False;False;False;False;False;False;True;True;True;True;True;0;False;;False;False;False;False;False;False;False;True;False;0;False;;255;False;;255;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;False;True;1;False;;True;3;False;;True;True;0;False;;0;False;;True;1;LightMode=UniversalForward;False;False;0;;0;0;Standard;40;Workflow;1;0;Surface;0;0;  Refraction Model;0;0;  Blend;0;0;Two Sided;1;0;Fragment Normal Space,InvertActionOnDeselection;0;0;Forward Only;0;0;Transmission;0;0;  Transmission Shadow;0.5,False,;0;Translucency;0;0;  Translucency Strength;1,False,;0;  Normal Distortion;0.5,False,;0;  Scattering;2,False,;0;  Direct;0.9,False,;0;  Ambient;0.1,False,;0;  Shadow;0.5,False,;0;Cast Shadows;1;0;  Use Shadow Threshold;0;0;GPU Instancing;1;0;LOD CrossFade;1;0;Built-in Fog;1;0;_FinalColorxAlpha;0;0;Meta Pass;1;0;Override Baked GI;0;0;Extra Pre Pass;0;0;DOTS Instancing;0;0;Tessellation;0;0;  Phong;0;0;  Strength;0.5,False,;0;  Type;0;0;  Tess;16,False,;0;  Min;10,False,;0;  Max;25,False,;0;  Edge Length;16,False,;0;  Max Displacement;25,False,;0;Write Depth;0;0;  Early Z;0;0;Vertex Position,InvertActionOnDeselection;0;638366482361752245;Debug Display;0;0;Clear Coat;0;0;0;10;False;True;True;True;True;True;True;True;True;True;False;;False;0
 Node;AmplifyShaderEditor.LerpOp;46;-2718.92,45.43609;Inherit;True;3;0;COLOR;0,0,0,0;False;1;COLOR;0,0,0,0;False;2;FLOAT;0;False;1;COLOR;0
 Node;AmplifyShaderEditor.RegisterLocalVarNode;91;-2442.3,90.36633;Inherit;False;Steep Color;-1;True;1;0;COLOR;0,0,0,0;False;1;COLOR;0
 Node;AmplifyShaderEditor.Compare;16;-2480.241,-817.9631;Inherit;True;5;4;0;FLOAT;0;False;1;FLOAT;0;False;2;COLOR;0,0,0,0;False;3;COLOR;0,0,0,0;False;1;COLOR;0
@@ -3604,37 +3842,21 @@ Node;AmplifyShaderEditor.Vector3Node;70;-3720.896,-1687.04;Inherit;False;Instanc
 Node;AmplifyShaderEditor.RegisterLocalVarNode;77;-3535.877,-1689.393;Inherit;False;Planet Center;-1;True;1;0;FLOAT3;0,0,0;False;1;FLOAT3;0
 Node;AmplifyShaderEditor.RangedFloatNode;21;73.58442,-77.96731;Inherit;False;Constant;_Float0;Float 0;5;0;Create;True;0;0;0;False;0;False;0;0;0;0;0;1;FLOAT;0
 Node;AmplifyShaderEditor.RegisterLocalVarNode;85;-1369.378,74.93655;Inherit;False;Grass Color;-1;True;1;0;COLOR;0,0,0,0;False;1;COLOR;0
-Node;AmplifyShaderEditor.ColorNode;19;-1917.645,53.30392;Inherit;False;Property;_Grass;Grass Color;1;0;Create;False;0;0;0;False;0;False;0.2431373,0.7921569,0.2745098,1;0,0,0,0;True;0;5;COLOR;0;FLOAT;1;FLOAT;2;FLOAT;3;FLOAT;4
-Node;AmplifyShaderEditor.ColorNode;25;-1920.641,227.6528;Inherit;False;Property;_Dark_Grass;Dark Grass Color;2;0;Create;False;0;0;0;False;0;False;0.07787468,0.4716981,0.0966282,1;0,0,0,0;True;0;5;COLOR;0;FLOAT;1;FLOAT;2;FLOAT;3;FLOAT;4
+Node;AmplifyShaderEditor.ColorNode;19;-1917.645,53.30392;Inherit;False;Property;_Grass;Grass Color;1;0;Create;False;0;0;0;False;0;False;0.2431373,0.7921569,0.2745098,1;0,0,0,0;True;True;0;6;COLOR;0;FLOAT;1;FLOAT;2;FLOAT;3;FLOAT;4;FLOAT3;5
+Node;AmplifyShaderEditor.ColorNode;25;-1920.641,227.6528;Inherit;False;Property;_Dark_Grass;Dark Grass Color;2;0;Create;False;0;0;0;False;0;False;0.07787468,0.4716981,0.0966282,1;0,0,0,0;True;True;0;6;COLOR;0;FLOAT;1;FLOAT;2;FLOAT;3;FLOAT;4;FLOAT3;5
 Node;AmplifyShaderEditor.LerpOp;23;-2727.932,786.8101;Inherit;True;3;0;COLOR;0,0,0,0;False;1;COLOR;0,0,0,0;False;2;FLOAT;0;False;1;COLOR;0
 Node;AmplifyShaderEditor.RegisterLocalVarNode;88;-2450.154,844.8022;Inherit;False;Sand Color;-1;True;1;0;COLOR;0,0,0,0;False;1;COLOR;0
-Node;AmplifyShaderEditor.ColorNode;24;-3003.624,956.942;Inherit;False;Property;_Dark_Sand;Dark Sand Color;6;0;Create;False;0;0;0;False;0;False;0.8117647,0.6784314,0.3098039,1;0,0,0,0;True;0;5;COLOR;0;FLOAT;1;FLOAT;2;FLOAT;3;FLOAT;4
-Node;AmplifyShaderEditor.ColorNode;18;-3002.464,782.4973;Inherit;False;Property;_Sand;Sand Color;5;0;Create;False;0;0;0;False;0;False;1,0.8392157,0.3882353,1;0,0,0,0;True;0;5;COLOR;0;FLOAT;1;FLOAT;2;FLOAT;3;FLOAT;4
+Node;AmplifyShaderEditor.ColorNode;24;-3003.624,956.942;Inherit;False;Property;_Dark_Sand;Dark Sand Color;6;0;Create;False;0;0;0;False;0;False;0.8117647,0.6784314,0.3098039,1;0,0,0,0;True;True;0;6;COLOR;0;FLOAT;1;FLOAT;2;FLOAT;3;FLOAT;4;FLOAT3;5
+Node;AmplifyShaderEditor.ColorNode;18;-3002.464,782.4973;Inherit;False;Property;_Sand;Sand Color;5;0;Create;False;0;0;0;False;0;False;1,0.8392157,0.3882353,1;0,0,0,0;True;True;0;6;COLOR;0;FLOAT;1;FLOAT;2;FLOAT;3;FLOAT;4;FLOAT3;5
 Node;AmplifyShaderEditor.NoiseGeneratorNode;27;-2973.045,1133.734;Inherit;True;Simplex3D;True;False;2;0;FLOAT3;0,0,0;False;1;FLOAT;1;False;1;FLOAT;0
 Node;AmplifyShaderEditor.RangedFloatNode;29;-3208.545,1289.137;Inherit;False;Property;_Sand_Warping;Sand Warping;3;0;Create;False;0;0;0;False;0;False;0.39;0;0;0;0;1;FLOAT;0
-Node;AmplifyShaderEditor.ColorNode;44;-2991.33,221.8256;Inherit;False;Property;_Dark_Rock;Dark Rock Color;10;0;Create;False;0;0;0;False;0;False;0.3215686,0.227451,0.1490196,1;0,0,0,0;True;0;5;COLOR;0;FLOAT;1;FLOAT;2;FLOAT;3;FLOAT;4
-Node;AmplifyShaderEditor.ColorNode;45;-2990.17,47.37912;Inherit;False;Property;_RockColor;Rock Color;9;0;Create;True;0;0;0;False;0;False;0.3215686,0.2,0.09803922,1;0,0,0,0;True;0;5;COLOR;0;FLOAT;1;FLOAT;2;FLOAT;3;FLOAT;4
+Node;AmplifyShaderEditor.ColorNode;44;-2991.33,221.8256;Inherit;False;Property;_Dark_Rock;Dark Rock Color;10;0;Create;False;0;0;0;False;0;False;0.3215686,0.227451,0.1490196,1;0,0,0,0;True;True;0;6;COLOR;0;FLOAT;1;FLOAT;2;FLOAT;3;FLOAT;4;FLOAT3;5
+Node;AmplifyShaderEditor.ColorNode;45;-2990.17,47.37912;Inherit;False;Property;_RockColor;Rock Color;9;0;Create;True;0;0;0;False;0;False;0.3215686,0.2,0.09803922,1;0,0,0,0;True;True;0;6;COLOR;0;FLOAT;1;FLOAT;2;FLOAT;3;FLOAT;4;FLOAT3;5
 Node;AmplifyShaderEditor.NoiseGeneratorNode;48;-2963.965,398.3031;Inherit;True;Simplex3D;True;False;2;0;FLOAT3;0,0,0;False;1;FLOAT;1;False;1;FLOAT;0
 Node;AmplifyShaderEditor.RangedFloatNode;49;-3216.973,532.5919;Inherit;False;Property;_Steepness_Warping;Steepness Warping;7;0;Create;False;0;0;0;False;0;False;0.3;0;0;0;0;1;FLOAT;0
 Node;AmplifyShaderEditor.WorldPosInputsNode;105;-3217.341,1137.658;Inherit;False;0;4;FLOAT3;0;FLOAT;1;FLOAT;2;FLOAT;3
 Node;AmplifyShaderEditor.LerpOp;22;-1576.035,86.67471;Inherit;True;3;0;COLOR;0,0,0,0;False;1;COLOR;0,0,0,0;False;2;FLOAT;0;False;1;COLOR;0
-Node;AmplifyShaderEditor.WireNode;109;-1630.659,284.5552;Inherit;False;1;0;FLOAT;0;False;1;FLOAT;0
-Node;AmplifyShaderEditor.WireNode;110;-1463.657,369.2549;Inherit;False;1;0;FLOAT;0;False;1;FLOAT;0
 Node;AmplifyShaderEditor.NoiseGeneratorNode;28;-1693.726,419.3496;Inherit;True;Simplex3D;True;False;2;0;FLOAT3;0,0,0;False;1;FLOAT;1;False;1;FLOAT;0
-Node;AmplifyShaderEditor.WorldPosInputsNode;131;-2134.274,701.5029;Inherit;False;0;4;FLOAT3;0;FLOAT;1;FLOAT;2;FLOAT;3
-Node;AmplifyShaderEditor.FunctionNode;135;-1852.907,1065.351;Inherit;False;Twirl;-1;;13;90936742ac32db8449cd21ab6dd337c8;0;4;1;FLOAT2;0,0;False;2;FLOAT2;0,0;False;3;FLOAT;0;False;4;FLOAT2;0,0;False;1;FLOAT2;0
-Node;AmplifyShaderEditor.FunctionNode;138;-1403.05,1251.839;Inherit;False;Twirl;-1;;15;90936742ac32db8449cd21ab6dd337c8;0;4;1;FLOAT2;0,0;False;2;FLOAT2;0,0;False;3;FLOAT;0;False;4;FLOAT2;0,0;False;1;FLOAT2;0
-Node;AmplifyShaderEditor.RangedFloatNode;133;-2202.907,1122.351;Inherit;False;Property;_S1;S;12;0;Create;True;0;0;0;False;0;False;0;0;0;0;0;1;FLOAT;0
-Node;AmplifyShaderEditor.SimpleMultiplyOpNode;134;-2055.907,1165.351;Inherit;False;2;2;0;FLOAT;0;False;1;FLOAT;0.001;False;1;FLOAT;0
-Node;AmplifyShaderEditor.SimpleMultiplyOpNode;140;-1873.283,1225.678;Inherit;False;2;2;0;FLOAT;0;False;1;FLOAT;0.5;False;1;FLOAT;0
-Node;AmplifyShaderEditor.SimpleMultiplyOpNode;141;-1682.283,1310.678;Inherit;False;2;2;0;FLOAT;0;False;1;FLOAT;0.5;False;1;FLOAT;0
-Node;AmplifyShaderEditor.RegisterLocalVarNode;142;-1164.726,1257.906;Inherit;False;Twirl;-1;True;1;0;FLOAT2;0,0;False;1;FLOAT2;0
-Node;AmplifyShaderEditor.GetLocalVarNode;136;-1964.78,420.2813;Inherit;False;142;Twirl;1;0;OBJECT;;False;1;FLOAT2;0
-Node;AmplifyShaderEditor.FunctionNode;137;-1626.647,1145.421;Inherit;False;Twirl;-1;;16;90936742ac32db8449cd21ab6dd337c8;0;4;1;FLOAT2;0,0;False;2;FLOAT2;0,0;False;3;FLOAT;0;False;4;FLOAT2;0,0;False;1;FLOAT2;0
-Node;AmplifyShaderEditor.Vector3Node;144;-1684.72,1449.419;Inherit;False;Constant;_Vector2;Vector 1;13;0;Create;True;0;0;0;False;0;False;-500,750,100;0,0,0;0;4;FLOAT3;0;FLOAT;1;FLOAT;2;FLOAT;3
-Node;AmplifyShaderEditor.Vector3Node;143;-2012.039,1376.682;Inherit;False;Constant;_Vector1;Vector 1;13;0;Create;True;0;0;0;False;0;False;1000,-250,5000;0,0,0;0;4;FLOAT3;0;FLOAT;1;FLOAT;2;FLOAT;3
-Node;AmplifyShaderEditor.Vector3Node;145;-2159.653,935.9783;Inherit;False;Constant;_Vector3;Vector 1;13;0;Create;True;0;0;0;False;0;False;1000,-250,-100;0,0,0;0;4;FLOAT3;0;FLOAT;1;FLOAT;2;FLOAT;3
-Node;AmplifyShaderEditor.RangedFloatNode;14;-2097.584,510.1255;Inherit;False;Property;_GrassWarping;Grass Warping;0;0;Create;True;0;0;0;False;0;False;0.87;0;0;0;0;1;FLOAT;0
 Node;AmplifyShaderEditor.SimpleMultiplyOpNode;107;-1881.372,508.2319;Inherit;False;2;2;0;FLOAT;0;False;1;FLOAT;0.0005;False;1;FLOAT;0
 Node;AmplifyShaderEditor.SimpleSubtractOpNode;53;-2955.736,-387.1599;Inherit;False;2;0;FLOAT3;0,0,0;False;1;FLOAT3;0,0,0;False;1;FLOAT3;0
 Node;AmplifyShaderEditor.NormalizeNode;55;-2784.1,-387.1942;Inherit;False;False;1;0;FLOAT3;0,0,0;False;1;FLOAT3;0
@@ -3644,14 +3866,12 @@ Node;AmplifyShaderEditor.GetLocalVarNode;163;-1776.257,-1505.404;Inherit;False;7
 Node;AmplifyShaderEditor.GetLocalVarNode;79;-3120.699,-904.2754;Inherit;False;77;Planet Center;1;0;OBJECT;;False;1;FLOAT3;0
 Node;AmplifyShaderEditor.WorldPosInputsNode;167;-1755.358,-1439.301;Inherit;False;0;4;FLOAT3;0;FLOAT;1;FLOAT;2;FLOAT;3
 Node;AmplifyShaderEditor.Compare;168;-1075.259,-1206.043;Inherit;False;3;4;0;FLOAT;0;False;1;FLOAT;0;False;2;COLOR;0,0,0,0;False;3;COLOR;0,0,0,0;False;1;COLOR;0
-Node;AmplifyShaderEditor.RangedFloatNode;153;-1501.084,-1374.165;Inherit;False;Property;_Radius;Radius;13;0;Create;True;0;0;0;False;0;False;3600;0;0;0;0;1;FLOAT;0
 Node;AmplifyShaderEditor.NoiseGeneratorNode;11;-2929.949,-1130.328;Inherit;True;Simplex3D;True;False;2;0;FLOAT3;0,0,0;False;1;FLOAT;0.125;False;1;FLOAT;0
 Node;AmplifyShaderEditor.SimpleAddOpNode;15;-2652.24,-927.9636;Inherit;False;2;2;0;FLOAT;0;False;1;FLOAT;0;False;1;FLOAT;0
 Node;AmplifyShaderEditor.SimpleAddOpNode;179;-1219.374,-1564.862;Inherit;False;2;2;0;FLOAT;0;False;1;FLOAT;0;False;1;FLOAT;0
 Node;AmplifyShaderEditor.SimpleMultiplyOpNode;71;0.4014053,-232.7601;Inherit;False;2;2;0;COLOR;0,0,0,0;False;1;COLOR;0,0,0,0;False;1;COLOR;0
 Node;AmplifyShaderEditor.VertexColorNode;72;-272.7958,-496.0453;Inherit;False;0;5;COLOR;0;FLOAT;1;FLOAT;2;FLOAT;3;FLOAT;4
-Node;AmplifyShaderEditor.ColorNode;160;-1534.234,-1216.121;Inherit;False;Constant;_Color1;Color 0;13;0;Create;True;0;0;0;False;0;False;0.6415094,0.6415094,0.6415094,0;0,0,0,0;False;0;5;COLOR;0;FLOAT;1;FLOAT;2;FLOAT;3;FLOAT;4
-Node;AmplifyShaderEditor.SimpleSubtractOpNode;176;-1321.98,-1308.307;Inherit;False;2;0;FLOAT;0;False;1;FLOAT;50;False;1;FLOAT;0
+Node;AmplifyShaderEditor.ColorNode;160;-1534.234,-1216.121;Inherit;False;Constant;_Color1;Color 0;13;0;Create;True;0;0;0;False;0;False;0.6415094,0.6415094,0.6415094,0;0,0,0,0;False;True;0;6;COLOR;0;FLOAT;1;FLOAT;2;FLOAT;3;FLOAT;4;FLOAT3;5
 Node;AmplifyShaderEditor.NoiseGeneratorNode;178;-1497.083,-1767.227;Inherit;True;Simplex3D;True;False;2;0;FLOAT3;0,0,0;False;1;FLOAT;0.1;False;1;FLOAT;0
 Node;AmplifyShaderEditor.GetLocalVarNode;101;-1419.029,-832.6053;Inherit;False;100;Terrain Color;1;0;OBJECT;;False;1;COLOR;0
 Node;AmplifyShaderEditor.WorldPosInputsNode;106;-3202.916,381.6322;Inherit;False;0;4;FLOAT3;0;FLOAT;1;FLOAT;2;FLOAT;3
@@ -3664,9 +3884,28 @@ Node;AmplifyShaderEditor.GetLocalVarNode;78;-3193.89,-261.8027;Inherit;False;77;
 Node;AmplifyShaderEditor.FunctionNode;189;-414.7109,-136.4339;Inherit;False;World Normal Face;-1;;17;8ad4248928242e14ab87cd99e6913c33;1,86,1;0;1;FLOAT3;30
 Node;AmplifyShaderEditor.WorldNormalVector;191;-152.5524,-136.3483;Inherit;False;False;1;0;FLOAT3;0,0,1;False;4;FLOAT3;0;FLOAT;1;FLOAT;2;FLOAT;3
 Node;AmplifyShaderEditor.WorldNormalVector;193;-2820.651,-290.3495;Inherit;False;False;1;0;FLOAT3;0,0,1;False;4;FLOAT3;0;FLOAT;1;FLOAT;2;FLOAT;3
-WireConnection;1;0;71;0
-WireConnection;1;3;21;0
-WireConnection;1;4;21;0
+Node;AmplifyShaderEditor.SimpleSubtractOpNode;176;-1312,-1328;Inherit;False;2;0;FLOAT;0;False;1;FLOAT;50;False;1;FLOAT;0
+Node;AmplifyShaderEditor.RangedFloatNode;153;-1520,-1328;Inherit;False;Property;_Radius;Radius;12;0;Create;True;0;0;0;False;0;False;3600;0;0;0;0;1;FLOAT;0
+Node;AmplifyShaderEditor.ScreenDepthNode;194;-370.9371,150.5882;Inherit;False;0;False;1;0;FLOAT4;0,0,0,0;False;1;FLOAT;0
+Node;AmplifyShaderEditor.StepOpNode;195;-1440,416;Inherit;True;2;0;FLOAT;0;False;1;FLOAT;0.5;False;1;FLOAT;0
+Node;AmplifyShaderEditor.WireNode;196;-1616,320;Inherit;False;1;0;FLOAT;0;False;1;FLOAT;0
+Node;AmplifyShaderEditor.WireNode;197;-1264,368;Inherit;False;1;0;FLOAT;0;False;1;FLOAT;0
+Node;AmplifyShaderEditor.WireNode;199;-1872,448;Inherit;False;1;0;FLOAT3;0,0,0;False;1;FLOAT3;0
+Node;AmplifyShaderEditor.WorldPosInputsNode;131;-2128,352;Inherit;False;0;4;FLOAT3;0;FLOAT;1;FLOAT;2;FLOAT;3
+Node;AmplifyShaderEditor.WireNode;200;-1936,416;Inherit;False;1;0;FLOAT3;0,0,0;False;1;FLOAT3;0
+Node;AmplifyShaderEditor.WireNode;202;-1504,672;Inherit;False;1;0;FLOAT;0;False;1;FLOAT;0
+Node;AmplifyShaderEditor.RangedFloatNode;14;-2160,512;Inherit;False;Property;_GrassWarping;Grass Warping;0;0;Create;True;0;0;0;False;0;False;0.87;0;0;0;0;1;FLOAT;0
+Node;AmplifyShaderEditor.NoiseGeneratorNode;201;-1968,736;Inherit;False;Simplex3D;True;False;2;0;FLOAT3;0,0,0;False;1;FLOAT;0.0025;False;1;FLOAT;0
+Node;AmplifyShaderEditor.TemplateMultiPassMasterNode;0;0,0;Float;False;False;-1;2;UnityEditor.ShaderGraphLitGUI;0;12;New Amplify Shader;94348b07e5e8bab40bd6c8a1e3df54cd;True;ExtraPrePass;0;0;ExtraPrePass;5;False;False;False;False;False;False;False;False;False;False;False;False;True;0;False;;False;True;0;False;;False;False;False;False;False;False;False;False;False;True;False;0;False;;255;False;;255;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;False;True;1;False;;True;3;False;;True;True;0;False;;0;False;;True;4;RenderPipeline=UniversalPipeline;RenderType=Opaque=RenderType;Queue=Geometry=Queue=0;UniversalMaterialType=Lit;True;5;True;12;all;0;False;True;1;1;False;;0;False;;0;1;False;;0;False;;False;False;False;False;False;False;False;False;False;False;False;False;True;0;False;;False;True;True;True;True;True;0;False;;False;False;False;False;False;False;False;True;False;0;False;;255;False;;255;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;False;True;1;False;;True;3;False;;True;True;0;False;;0;False;;True;0;False;False;0;;0;0;Standard;0;False;0
+Node;AmplifyShaderEditor.TemplateMultiPassMasterNode;2;0,0;Float;False;False;-1;2;UnityEditor.ShaderGraphLitGUI;0;12;New Amplify Shader;94348b07e5e8bab40bd6c8a1e3df54cd;True;ShadowCaster;0;2;ShadowCaster;0;False;False;False;False;False;False;False;False;False;False;False;False;True;0;False;;False;True;0;False;;False;False;False;False;False;False;False;False;False;True;False;0;False;;255;False;;255;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;False;True;1;False;;True;3;False;;True;True;0;False;;0;False;;True;4;RenderPipeline=UniversalPipeline;RenderType=Opaque=RenderType;Queue=Geometry=Queue=0;UniversalMaterialType=Lit;True;5;True;12;all;0;False;False;False;False;False;False;False;False;False;False;False;False;True;0;False;;False;False;False;True;False;False;False;False;0;False;;False;False;False;False;False;False;False;False;False;True;1;False;;True;3;False;;False;True;1;LightMode=ShadowCaster;False;False;0;;0;0;Standard;0;False;0
+Node;AmplifyShaderEditor.TemplateMultiPassMasterNode;3;0,0;Float;False;False;-1;2;UnityEditor.ShaderGraphLitGUI;0;12;New Amplify Shader;94348b07e5e8bab40bd6c8a1e3df54cd;True;DepthOnly;0;3;DepthOnly;0;False;False;False;False;False;False;False;False;False;False;False;False;True;0;False;;False;True;0;False;;False;False;False;False;False;False;False;False;False;True;False;0;False;;255;False;;255;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;False;True;1;False;;True;3;False;;True;True;0;False;;0;False;;True;4;RenderPipeline=UniversalPipeline;RenderType=Opaque=RenderType;Queue=Geometry=Queue=0;UniversalMaterialType=Lit;True;5;True;12;all;0;False;False;False;False;False;False;False;False;False;False;False;False;True;0;False;;False;False;False;True;True;False;False;False;0;False;;False;False;False;False;False;False;False;False;False;True;1;False;;False;False;True;1;LightMode=DepthOnly;False;False;0;;0;0;Standard;0;False;0
+Node;AmplifyShaderEditor.TemplateMultiPassMasterNode;4;0,0;Float;False;False;-1;2;UnityEditor.ShaderGraphLitGUI;0;12;New Amplify Shader;94348b07e5e8bab40bd6c8a1e3df54cd;True;Meta;0;4;Meta;0;False;False;False;False;False;False;False;False;False;False;False;False;True;0;False;;False;True;0;False;;False;False;False;False;False;False;False;False;False;True;False;0;False;;255;False;;255;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;False;True;1;False;;True;3;False;;True;True;0;False;;0;False;;True;4;RenderPipeline=UniversalPipeline;RenderType=Opaque=RenderType;Queue=Geometry=Queue=0;UniversalMaterialType=Lit;True;5;True;12;all;0;False;False;False;False;False;False;False;False;False;False;False;False;False;False;True;2;False;;False;False;False;False;False;False;False;False;False;False;False;False;False;False;True;1;LightMode=Meta;False;False;0;;0;0;Standard;0;False;0
+Node;AmplifyShaderEditor.TemplateMultiPassMasterNode;5;0,0;Float;False;False;-1;2;UnityEditor.ShaderGraphLitGUI;0;12;New Amplify Shader;94348b07e5e8bab40bd6c8a1e3df54cd;True;Universal2D;0;5;Universal2D;0;False;False;False;False;False;False;False;False;False;False;False;False;True;0;False;;False;True;0;False;;False;False;False;False;False;False;False;False;False;True;False;0;False;;255;False;;255;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;False;True;1;False;;True;3;False;;True;True;0;False;;0;False;;True;4;RenderPipeline=UniversalPipeline;RenderType=Opaque=RenderType;Queue=Geometry=Queue=0;UniversalMaterialType=Lit;True;5;True;12;all;0;False;True;1;1;False;;0;False;;1;1;False;;0;False;;False;False;False;False;False;False;False;False;False;False;False;False;False;False;True;True;True;True;True;0;False;;False;False;False;False;False;False;False;False;False;True;1;False;;True;3;False;;True;True;0;False;;0;False;;True;1;LightMode=Universal2D;False;False;0;;0;0;Standard;0;False;0
+Node;AmplifyShaderEditor.TemplateMultiPassMasterNode;6;0,0;Float;False;False;-1;2;UnityEditor.ShaderGraphLitGUI;0;12;New Amplify Shader;94348b07e5e8bab40bd6c8a1e3df54cd;True;DepthNormals;0;6;DepthNormals;0;False;False;False;False;False;False;False;False;False;False;False;False;True;0;False;;False;True;0;False;;False;False;False;False;False;False;False;False;False;True;False;0;False;;255;False;;255;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;False;True;1;False;;True;3;False;;True;True;0;False;;0;False;;True;4;RenderPipeline=UniversalPipeline;RenderType=Opaque=RenderType;Queue=Geometry=Queue=0;UniversalMaterialType=Lit;True;5;True;12;all;0;False;True;1;1;False;;0;False;;0;1;False;;0;False;;False;False;False;False;False;False;False;False;False;False;False;False;False;False;False;False;False;False;False;False;False;False;False;False;True;1;False;;True;3;False;;False;True;1;LightMode=DepthNormals;False;False;0;;0;0;Standard;0;False;0
+Node;AmplifyShaderEditor.TemplateMultiPassMasterNode;7;0,0;Float;False;False;-1;2;UnityEditor.ShaderGraphLitGUI;0;12;New Amplify Shader;94348b07e5e8bab40bd6c8a1e3df54cd;True;GBuffer;0;7;GBuffer;0;False;False;False;False;False;False;False;False;False;False;False;False;True;0;False;;False;True;0;False;;False;False;False;False;False;False;False;False;False;True;False;0;False;;255;False;;255;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;False;True;1;False;;True;3;False;;True;True;0;False;;0;False;;True;4;RenderPipeline=UniversalPipeline;RenderType=Opaque=RenderType;Queue=Geometry=Queue=0;UniversalMaterialType=Lit;True;5;True;12;all;0;False;True;1;1;False;;0;False;;1;1;False;;0;False;;False;False;False;False;False;False;False;False;False;False;False;False;False;False;True;True;True;True;True;0;False;;False;False;False;False;False;False;False;True;False;0;False;;255;False;;255;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;False;True;1;False;;True;3;False;;True;True;0;False;;0;False;;True;1;LightMode=UniversalGBuffer;False;False;0;;0;0;Standard;0;False;0
+Node;AmplifyShaderEditor.TemplateMultiPassMasterNode;8;0,0;Float;False;False;-1;2;UnityEditor.ShaderGraphLitGUI;0;12;New Amplify Shader;94348b07e5e8bab40bd6c8a1e3df54cd;True;SceneSelectionPass;0;8;SceneSelectionPass;0;False;False;False;False;False;False;False;False;False;False;False;False;True;0;False;;False;True;0;False;;False;False;False;False;False;False;False;False;False;True;False;0;False;;255;False;;255;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;False;True;1;False;;True;3;False;;True;True;0;False;;0;False;;True;4;RenderPipeline=UniversalPipeline;RenderType=Opaque=RenderType;Queue=Geometry=Queue=0;UniversalMaterialType=Lit;True;5;True;12;all;0;False;False;False;False;False;False;False;False;False;False;False;False;True;0;False;;False;True;2;False;;False;False;False;False;False;False;False;False;False;False;False;False;False;False;True;1;LightMode=SceneSelectionPass;False;False;0;;0;0;Standard;0;False;0
+Node;AmplifyShaderEditor.TemplateMultiPassMasterNode;9;0,0;Float;False;False;-1;2;UnityEditor.ShaderGraphLitGUI;0;12;New Amplify Shader;94348b07e5e8bab40bd6c8a1e3df54cd;True;ScenePickingPass;0;9;ScenePickingPass;0;False;False;False;False;False;False;False;False;False;False;False;False;True;0;False;;False;True;0;False;;False;False;False;False;False;False;False;False;False;True;False;0;False;;255;False;;255;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;False;True;1;False;;True;3;False;;True;True;0;False;;0;False;;True;4;RenderPipeline=UniversalPipeline;RenderType=Opaque=RenderType;Queue=Geometry=Queue=0;UniversalMaterialType=Lit;True;5;True;12;all;0;False;False;False;False;False;False;False;False;False;False;False;False;True;0;False;;False;False;False;False;False;False;False;False;False;False;False;False;False;False;False;False;True;1;LightMode=Picking;False;False;0;;0;0;Standard;0;False;0
+Node;AmplifyShaderEditor.TemplateMultiPassMasterNode;1;222.5646,-161.5493;Float;False;True;-1;2;UnityEditor.ShaderGraphLitGUI;0;12;Planet Shader;94348b07e5e8bab40bd6c8a1e3df54cd;True;Forward;0;1;Forward;21;False;False;False;False;False;False;False;False;False;False;False;False;True;0;False;;False;True;0;False;;False;False;False;False;False;False;False;False;False;True;False;0;False;;255;False;;255;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;False;True;1;False;;True;3;False;;True;True;0;False;;0;False;;True;4;RenderPipeline=UniversalPipeline;RenderType=Opaque=RenderType;Queue=Geometry=Queue=0;UniversalMaterialType=Lit;True;5;True;12;all;0;False;True;1;1;False;;0;False;;1;1;False;;0;False;;False;False;False;False;False;False;False;False;False;False;False;False;False;False;True;True;True;True;True;0;False;;False;False;False;False;False;False;False;True;False;0;False;;255;False;;255;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;False;True;1;False;;True;3;False;;True;True;0;False;;0;False;;True;1;LightMode=UniversalForward;False;False;0;;0;0;Standard;42;Lighting Model;0;0;Workflow;1;0;Surface;0;0;  Refraction Model;0;0;  Blend;0;0;Two Sided;1;638553951725082609;Fragment Normal Space,InvertActionOnDeselection;0;0;Forward Only;0;0;Transmission;0;0;  Transmission Shadow;0.5,False,;0;Translucency;0;0;  Translucency Strength;1,False,;0;  Normal Distortion;0.5,False,;0;  Scattering;2,False,;0;  Direct;0.9,False,;0;  Ambient;0.1,False,;0;  Shadow;0.5,False,;0;Cast Shadows;1;0;  Use Shadow Threshold;0;0;Receive Shadows;1;0;Receive SSAO;1;0;GPU Instancing;1;0;LOD CrossFade;1;0;Built-in Fog;1;0;_FinalColorxAlpha;0;0;Meta Pass;1;0;Override Baked GI;0;0;Extra Pre Pass;0;0;Tessellation;0;0;  Phong;0;0;  Strength;0.5,False,;0;  Type;0;0;  Tess;16,False,;0;  Min;10,False,;0;  Max;25,False,;0;  Edge Length;16,False,;0;  Max Displacement;25,False,;0;Write Depth;0;638553697908811491;  Early Z;0;0;Vertex Position,InvertActionOnDeselection;0;638366482361752245;Debug Display;0;0;Clear Coat;0;0;0;10;False;True;True;True;True;True;True;True;True;True;False;;False;0
 WireConnection;46;0;45;0
 WireConnection;46;1;44;0
 WireConnection;46;2;48;0
@@ -3696,24 +3935,9 @@ WireConnection;48;0;106;0
 WireConnection;48;1;49;0
 WireConnection;22;0;19;0
 WireConnection;22;1;25;0
-WireConnection;22;2;109;0
-WireConnection;109;0;110;0
-WireConnection;110;0;28;0
-WireConnection;28;0;131;0
+WireConnection;22;2;196;0
+WireConnection;28;0;199;0
 WireConnection;28;1;107;0
-WireConnection;135;1;131;0
-WireConnection;135;2;145;0
-WireConnection;135;3;134;0
-WireConnection;138;1;137;0
-WireConnection;138;2;144;0
-WireConnection;138;3;141;0
-WireConnection;134;0;133;0
-WireConnection;140;0;134;0
-WireConnection;141;0;140;0
-WireConnection;142;0;138;0
-WireConnection;137;1;135;0
-WireConnection;137;2;143;0
-WireConnection;137;3;140;0
 WireConnection;107;0;14;0
 WireConnection;53;0;102;0
 WireConnection;53;1;78;0
@@ -3733,10 +3957,21 @@ WireConnection;179;0;178;0
 WireConnection;179;1;165;0
 WireConnection;71;0;72;0
 WireConnection;71;1;101;0
-WireConnection;176;0;153;0
 WireConnection;178;0;182;0
 WireConnection;56;0;55;0
 WireConnection;56;1;193;0
 WireConnection;191;0;189;30
+WireConnection;176;0;153;0
+WireConnection;195;0;28;0
+WireConnection;195;1;202;0
+WireConnection;196;0;197;0
+WireConnection;197;0;195;0
+WireConnection;199;0;200;0
+WireConnection;200;0;131;0
+WireConnection;202;0;201;0
+WireConnection;201;0;131;0
+WireConnection;1;0;71;0
+WireConnection;1;3;21;0
+WireConnection;1;4;21;0
 ASEEND*/
-//CHKSM=E479E3E3521CA34695A4EB808CBBD04E641CF778
+//CHKSM=2CD4E8420A2FED81900585DBDE326BCA1C40C6A0

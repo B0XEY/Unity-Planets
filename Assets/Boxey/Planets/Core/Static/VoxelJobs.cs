@@ -30,8 +30,8 @@ namespace Boxey.Planets.Core.Static {
             //Single Data
             [ReadOnly] public NativeArray<float3> NoiseOffsets;
             [ReadOnly] public NativeArray<float> NoiseCurves;
-            // Returned Map
-            public NativeArray<float> Map;
+            // Returned Map using float 4 so we can pass mor data out like ore, material color, ect
+            public NativeArray<float4> Map;
             
             public void Execute(int index) {
                 var z = index % ChunkResolution;
@@ -40,11 +40,12 @@ namespace Boxey.Planets.Core.Static {
                 var voxelPosition = ((new float3(x, y, z) * VoxelScale) + NoisePosition) - CenterOffset;
                 var distanceFromCenter = math.distance(voxelPosition, PlanetCenter);
                 var radiusValue = math.saturate((distanceFromCenter - Radius) / (-Radius)) * 2 - 1;
-                var multiplier = DoNoiseLayers ? 2.25f : 1;
+                var multiplier = DoNoiseLayers ? 2.5f : 1;
                 var mapValue = radiusValue * multiplier;
-                Map[index] = mapValue;
-                if (!DoNoiseLayers) return;
-                Map[index] += GetValueAtPoint(voxelPosition);
+                if (DoNoiseLayers) {
+                    mapValue += GetValueAtPoint(voxelPosition);
+                }
+                Map[index] = new float4(0, 0, 0, mapValue);
             }
             private float GetValueAtPoint(float3 position) {
                 var height = 0f;
@@ -93,7 +94,7 @@ namespace Boxey.Planets.Core.Static {
             [ReadOnly] public int4 CubeIntData; //XYZ: center offset, w: size
             [ReadOnly] public float3 CubeFloatData; //x: Voxel Scale, y: Create Gate, z: Value Gate
             
-            [ReadOnly] public NativeArray<float> NoiseMap;
+            [ReadOnly] public NativeArray<float4> NoiseMap;
             [ReadOnly] public NativeArray<float> ModMap;
             
             public NativeList<float3> Vertices;
@@ -101,7 +102,7 @@ namespace Boxey.Planets.Core.Static {
             
             private float SampleMap(int3 point){
                 var index = point.x + (CubeIntData.w + 1) * (point.y + (CubeIntData.w + 1) * point.z);
-                return NoiseMap[index] + ModMap[index];
+                return NoiseMap[index].w + ModMap[index];
             }
             private int GetCubeConfig(int3 point) {
                 var configIndex = 0;
@@ -152,6 +153,7 @@ namespace Boxey.Planets.Core.Static {
                         //Add to the lists
                         Vertices.Add(vertPosition);
                         Triangles.Add(Vertices.Length - 1);
+                        
                         edgeIndex++;
                     }
                 }

@@ -8,7 +8,7 @@ using Object = UnityEngine.Object;
 namespace Boxey.Planets.Core.Generation {
     public class Node{
         //Private Data
-        private readonly Planet _planet;
+        private readonly PlanetaryObject _planetaryObject;
         private GameObject _nodeObject;
         private List<GameObject> _nodeFoliage;
         private readonly Vector3 _offset;
@@ -20,25 +20,23 @@ namespace Boxey.Planets.Core.Generation {
         public readonly int Divisions;
         
         //Terraforming data done to chunk
-        private float[] _planetMap;
+        private float4[] _planetMap;
         private float[] _modData;
 
         private Mesh _nodeMesh;
-        private MeshFilter _nodeFilter;
-        private MeshRenderer _nodeRenderer;
-        private MeshCollider _nodeCollider;
+        //private MeshFilter _nodeFilter;
+        //private MeshRenderer _nodeRenderer;
+        //private MeshCollider _nodeCollider;
         private bool _isGenerated;
 
-        public Node(Planet planet, Node parent, int divisions, Vector3 offset, bool isRoot = false){
-            _planet = planet;
+        public Node(PlanetaryObject planetaryObject, Node parent, int divisions, Vector3 offset, bool isRoot = false){
+            _planetaryObject = planetaryObject;
             ParentNode = parent;
             Divisions = divisions;
             _offset = offset;
             NodeBounds = new Bounds(NodeLocalPosition(), Vector3.one * NodeScale());
             if (isRoot) return;
-            _planetMap = JobManager.GetPlanetNoiseMap(Planet.ChunkSize, GetSamplePosition(), 
-                _planet.PlanetRadius, _planet.RootNode.NodeLocalPosition(), NodeScale(), _planet.Seed, _planet.CurrentDivisions, _planet.PlanetData);
-            _modData = _planet.TryGetModTreeData(NodeLocalPosition());
+            _modData = _planetaryObject.TryGetModTreeData(NodeLocalPosition());
         }
         
         #region Node functions
@@ -50,12 +48,12 @@ namespace Boxey.Planets.Core.Generation {
             }
             //Noise map check 
             var nodePosition = NodeLocalPosition();
-            _planetMap ??= JobManager.GetPlanetNoiseMap(Planet.ChunkSize, GetSamplePosition(),
-                _planet.PlanetRadius, _planet.RootNode.NodeLocalPosition(), NodeScale(), _planet.Seed, _planet.CurrentDivisions,
-                _planet.PlanetData);
-            _modData ??= _planet.TryGetModTreeData(nodePosition);
+            _planetMap ??= JobManager.GetPlanetNoiseMap(PlanetaryObject.ChunkSize, GetSamplePosition(),
+                _planetaryObject.PlanetRadius, _planetaryObject.RootNode.NodeLocalPosition(), NodeScale(), _planetaryObject.Seed, _planetaryObject.MaxDivisions,
+                _planetaryObject.PlanetData);
+            _modData ??= _planetaryObject.TryGetModTreeData(nodePosition);
             //Build terrain
-            var meshFunction = new NodeMarching(Planet.ChunkSize, NodeScale(), _planet.ValueGate, _planet.CreateGate, _planet.SmoothTerrain, _planetMap, _modData);
+            var meshFunction = new NodeMarching(PlanetaryObject.ChunkSize, NodeScale(), _planetaryObject.ValueGate, _planetaryObject.CreateGate, _planetaryObject.SmoothTerrain, _planetMap, _modData);
             meshFunction.Generate();
             
 
@@ -66,14 +64,14 @@ namespace Boxey.Planets.Core.Generation {
                 _nodeMesh = null;
                 _nodeObject = null;
             }
-            _nodeObject = Object.Instantiate(_planet.NodePrefab, _planet.ChunkHolder);
+            _nodeObject = Object.Instantiate(_planetaryObject.NodePrefab, _planetaryObject.ChunkHolder);
             _nodeObject.layer = 3;
-            var position = (nodePosition - _planet.StartingPosition);
+            var position = (nodePosition - _planetaryObject.StartingPosition);
             _nodeObject.name = $"Node ({Divisions}): ({position.x}, {position.y}, {position.z})";
             _nodeObject.transform.localPosition = position;
-            _nodeObject.TryGetComponent(out _nodeFilter);
-            _nodeObject.TryGetComponent(out _nodeRenderer);
-            _nodeObject.TryGetComponent(out _nodeCollider);
+            _nodeObject.TryGetComponent<MeshFilter>(out var nodeFilter);
+            _nodeObject.TryGetComponent<MeshRenderer>(out var nodeRenderer);
+            _nodeObject.TryGetComponent<MeshCollider>(out var nodeCollider);
             
             if (meshFunction.VerticesArray.Length != 0){
                 _nodeMesh = new Mesh{
@@ -83,11 +81,13 @@ namespace Boxey.Planets.Core.Generation {
                     triangles = meshFunction.TriangleArray
                 };
                 
-                _nodeFilter.sharedMesh = _nodeMesh;
-                _nodeRenderer.sharedMaterial = _planet.ChunkMaterial;
-                //Create the Mesh Collider for the object if it is one of the last 2 divisions
-                if (Divisions <= _planet.CurrentDivisions * 0.5f){
-                    _nodeCollider.sharedMesh = _nodeMesh;
+                //NodeMeshExtruder.UpdateMesh(_nodeMesh, 0.1f);
+                
+                nodeFilter.sharedMesh = _nodeMesh;
+                nodeRenderer.sharedMaterial = _planetaryObject.ChunkMaterial;
+                //Create the Mesh Collider for the object if it is one of the last half divisions
+                if (Divisions <= _planetaryObject.MaxDivisions * 0.5f){
+                    nodeCollider.sharedMesh = _nodeMesh;
                 }
             }else {
                 _nodeObject.SetActive(false);
@@ -98,7 +98,7 @@ namespace Boxey.Planets.Core.Generation {
             //make sure all children are generated
             var childNodesGenerated = Children.Sum(node => node._isGenerated ? 1 : 0);
             if (childNodesGenerated == 0 && _nodeObject) _nodeObject.SetActive(true);
-            if (childNodesGenerated < 8) return;
+            if (childNodesGenerated < 7) return;
             //Split the node
             if (_nodeObject != null && _nodeObject.activeSelf) _nodeObject.SetActive(false);
             //Foliage
@@ -110,7 +110,6 @@ namespace Boxey.Planets.Core.Generation {
         public void UpdateNode(){
             if (_isGenerated && _nodeObject && !_nodeObject.activeSelf) {
                 _nodeObject.SetActive(true);
-                return;
             }
             if (!IsLeaf()) {
                 //Node has kids so the mesh is not needed try to call the split function to toggle off mesh
@@ -120,12 +119,11 @@ namespace Boxey.Planets.Core.Generation {
             if (!_isGenerated || !_nodeObject){
                 //Leaf node that is not generated or the object does not exist, so we remake it
                 CreateNode();
-                return;
             }
         } 
         public void DestroyNode(){
             //Save mod data
-            if (_modData != null) _planet.SaveModTreeData(NodeLocalPosition(), _modData);
+            if (_modData != null) _planetaryObject.SaveModTreeData(NodeLocalPosition(), _modData);
             _isGenerated = false;
             //Destroy foliage
             if (_nodeFoliage != null){
@@ -143,7 +141,7 @@ namespace Boxey.Planets.Core.Generation {
         #region Terraforming functions
         public void Terraform(float3 terraformPoint, float radius, float speed, bool addTerrain) {
             //Call the job from the job manager
-            _modData = JobManager.GetTerraformMap(Planet.ChunkSize, NodeScale(), NodeWorldPosition(), _modData, terraformPoint, new float3(radius, speed, addTerrain ? 1 : -1));
+            _modData = JobManager.GetTerraformMap(PlanetaryObject.ChunkSize, NodeScale(), NodeWorldPosition(), _modData, terraformPoint, new float3(radius, speed, addTerrain ? 1 : -1));
             if (!IsLeaf()) return;
             _isGenerated = false;
             //Update Mesh
@@ -153,12 +151,12 @@ namespace Boxey.Planets.Core.Generation {
         #region Node Base Functions
         private float3 GetSamplePosition(){
             var nodePosition = NodeLocalPosition();
-            var offset = (float3)_planet.StartingPosition;
+            var offset = (float3)_planetaryObject.StartingPosition;
             return new float3((nodePosition.z - offset.z) + offset.x, nodePosition.y, (nodePosition.x - offset.x) + offset.z);
         }
         
         public bool IsLeaf() => Children == null;
-        public int NodeScale() => Planet.ChunkSize * (int)Mathf.Pow(2, Divisions - 1);
+        public int NodeScale() => PlanetaryObject.ChunkSize * (int)Mathf.Pow(2, Divisions - 1);
         private Vector3 NodeCenter() => Vector3.one * (NodeScale() / 2f);
         private Vector3 NodeLocalPosition(){
             if (ParentNode == null){

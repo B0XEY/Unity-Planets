@@ -12,7 +12,7 @@ namespace Boxey.Planets.Core.Generation {
         private readonly float _valueGate;
         private readonly float _createGate;
         private readonly bool _smoothTerrain;
-        private readonly float[] _noiseMap;
+        private readonly float4[] _noiseMap;
         private readonly float[] _modMap;
         //Mesh Data
         public Vector3[] VerticesArray;
@@ -20,7 +20,7 @@ namespace Boxey.Planets.Core.Generation {
         public int[] TriangleArray;
 
 
-        public NodeMarching(int chunkSize, int nodeScale, float valueGate, float createGate, bool smoothTerrain, float[] noiseMap, float[] modMap){
+        public NodeMarching(int chunkSize, int nodeScale, float valueGate, float createGate, bool smoothTerrain, float4[] noiseMap, float[] modMap){
             _chunkSize = chunkSize;
             _valueGate = valueGate;
             _createGate = createGate;
