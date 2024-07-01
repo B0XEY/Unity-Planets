@@ -17,18 +17,18 @@ Welcome to **Unity-Planets** where the coding skills come into play. The planets
 - Noise[^1] Layers
 - Marching Cubes [^2]
 - Customizable Planet Material via Scriptable Object
-- Terraforming
-- Water Shader (3D noise-based waves)
+- Terraforming?
 - Large planets
 - Example scene
 
 ## To-Do
-- [x] ~~Planet caves~~
+- [ ] Planet caves
 - [ ] Planet Chunk Mesh Gaps
 - [x] ~~Planet Roation with working chunk Generation~~
-- [ ] Terraforming Checks
+- [x] ~~Terraforming Checks~~
 - [ ] Object Spawning
-- [ ] Player Controller / gravity
+- [x] ~~Player Controller / gravity~~
+- [x] ~~Walkable Demo~~
 
 ## Contributing
 I appreciate your interest in contributing to the project. Whether you're a seasoned developer or just getting started, your contributions are highly valued. To contribute, you can follow these steps:
@@ -43,13 +43,12 @@ I appreciate your interest in contributing to the project. Whether you're a seas
 
 
 ## Images
-![Screenshot 2023-11-27 125453 (1)](https://github.com/B0XEY/Unity-Planets/assets/94720404/653b17cb-dea5-47c5-931c-d75676a9d38e)
-![Screenshot 2023-11-27 171250](https://github.com/B0XEY/Unity-Planets/assets/94720404/35746674-2878-4632-9871-177dcb2a75f7)
-![Screenshot 2023-11-28 185124](https://github.com/B0XEY/Unity-Planets/assets/94720404/a1f51629-b732-4cbe-a858-ecbf129b6cd8)
-![Screenshot 2023-11-28 185535](https://github.com/B0XEY/Unity-Planets/assets/94720404/5128e387-2cfe-4a4b-a4b9-e138de3dda1a)
+![Screenshot 2024-06-30 163516](https://github.com/B0XEY/Unity-Planets/assets/94720404/b70a6239-8f76-42c5-9ff2-0628a06b8a6d)
+![Screenshot 2024-06-30 211100](https://github.com/B0XEY/Unity-Planets/assets/94720404/2030b163-b3c4-4a22-8b1a-b64d826d36fa)
 
-> [!CAUTION]
->*Atmosphere shader not included ([Link](https://assetstore.unity.com/packages/3d/environments/sci-fi/space-graphics-planets-124578))*
+> [!NOTE]
+>*Atmosphere shader IS included (It's not mine but here is the [link](https://github.com/sinnwrig/URP-Atmosphere?tab=readme-ov-file))*
+
 
 ## License
 MIT License
@@ -66,7 +65,7 @@ furnished to do so, subject to the following conditions:
 The above copyright notice and this permission notice shall be included in all
 copies or substantial portions of the Software.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+THE SOFTWARE IS PROVIDED "AS IS", WIT HOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
 AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
