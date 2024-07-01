@@ -4,6 +4,7 @@
 
 > [!IMPORTANT]
 > This Code is unfinished and not deemed production-ready.
+> [Download a Small Demo Here](https://github.com/B0XEY/Unity-Planets/releases)
 > 
 > More Update Soon™️
 
