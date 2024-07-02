@@ -1,6 +1,6 @@
 ![Static Badge](https://img.shields.io/badge/Verson-2022.3.22f1-5300EB?style=for-the-badge&logo=Unity)
 [![Static Badge](https://img.shields.io/badge/Code%20Quality-b-green?style=for-the-badge&logo=codacy)](https://app.codacy.com/gh/B0XEY/Unity-Planets/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
-[![Static Badge](https://img.shields.io/badge/Version-0.2.2b-blue?style=for-the-badge)](https://github.com/B0XEY/Unity-Planets/releases)
+[![Static Badge](https://img.shields.io/badge/Version-0.2.5b-blue?style=for-the-badge)](https://github.com/B0XEY/Unity-Planets/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
 
 > [!IMPORTANT]
@@ -25,7 +25,7 @@ Welcome to **Unity-Planets** where the coding skills come into play. The planets
 
 ## To-Do
 - [ ] Planet caves
-- [ ] Planet Chunk Mesh Gaps
+- [x] ~~Planet Chunk Mesh Gaps~~ (Almost Complete but not noticable so I'm crossing it off)
 - [x] ~~Planet Roation with working chunk Generation~~
 - [x] ~~Terraforming Checks~~
 - [ ] Object Spawning
@@ -47,6 +47,9 @@ I appreciate your interest in contributing to the project. Whether you're a seas
 ## Images
 ![Screenshot 2024-06-30 163516](https://github.com/B0XEY/Unity-Planets/assets/94720404/b70a6239-8f76-42c5-9ff2-0628a06b8a6d)
 ![Screenshot 2024-06-30 211100](https://github.com/B0XEY/Unity-Planets/assets/94720404/2030b163-b3c4-4a22-8b1a-b64d826d36fa)
+![Screenshot 2024-07-02 153135](https://github.com/B0XEY/Unity-Planets/assets/94720404/6e3845a7-bd62-4272-875d-845d416de481)
+![Screenshot 2024-07-02 155703](https://github.com/B0XEY/Unity-Planets/assets/94720404/dd9e31db-4dee-4907-be7f-2518a40e0435)
+
 
 > [!NOTE]
 >*Atmosphere shader IS included (It's not mine but here is the [link](https://github.com/sinnwrig/URP-Atmosphere?tab=readme-ov-file))*
