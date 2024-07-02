@@ -24,9 +24,6 @@ namespace Boxey.Planets.Core.Generation {
         private float[] _modData;
 
         private Mesh _nodeMesh;
-        //private MeshFilter _nodeFilter;
-        //private MeshRenderer _nodeRenderer;
-        //private MeshCollider _nodeCollider;
         private bool _isGenerated;
 
         public Node(PlanetaryObject planetaryObject, Node parent, int divisions, Vector3 offset, bool isRoot = false){
@@ -81,11 +78,8 @@ namespace Boxey.Planets.Core.Generation {
                     triangles = meshFunction.TriangleArray
                 };
                 
-                //NodeMeshExtruder.UpdateMesh(_nodeMesh, 0.1f);
-                
                 nodeFilter.sharedMesh = _nodeMesh;
                 nodeRenderer.sharedMaterial = _planetaryObject.ChunkMaterial;
-                //Create the Mesh Collider for the object if it is one of the last half divisions
                 if (Divisions <= _planetaryObject.MaxDivisions * 0.5f){
                     nodeCollider.sharedMesh = _nodeMesh;
                 }
@@ -98,9 +92,13 @@ namespace Boxey.Planets.Core.Generation {
             //make sure all children are generated
             var childNodesGenerated = Children.Sum(node => node._isGenerated ? 1 : 0);
             if (childNodesGenerated == 0 && _nodeObject) _nodeObject.SetActive(true);
-            if (childNodesGenerated < 7) return;
+            if (childNodesGenerated < 7) {
+                return;
+            }
             //Split the node
-            if (_nodeObject != null && _nodeObject.activeSelf) _nodeObject.SetActive(false);
+            if (_nodeObject != null && _nodeObject.activeSelf) {
+                _nodeObject.SetActive(false);
+            }
             //Foliage
             if (_nodeFoliage != null){
                 _nodeFoliage.Clear();
@@ -123,7 +121,9 @@ namespace Boxey.Planets.Core.Generation {
         } 
         public void DestroyNode(){
             //Save mod data
-            if (_modData != null) _planetaryObject.SaveModTreeData(NodeLocalPosition(), _modData);
+            if (_modData != null) {
+                _planetaryObject.SaveModTreeData(NodeLocalPosition(), _modData);
+            }
             _isGenerated = false;
             //Destroy foliage
             if (_nodeFoliage != null){
@@ -142,7 +142,9 @@ namespace Boxey.Planets.Core.Generation {
         public void Terraform(float3 terraformPoint, float radius, float speed, bool addTerrain) {
             //Call the job from the job manager
             _modData = JobManager.GetTerraformMap(PlanetaryObject.ChunkSize, NodeScale(), NodeWorldPosition(), _modData, terraformPoint, new float3(radius, speed, addTerrain ? 1 : -1));
-            if (!IsLeaf()) return;
+            if (!IsLeaf()) {
+                return;
+            }
             _isGenerated = false;
             //Update Mesh
             UpdateNode();

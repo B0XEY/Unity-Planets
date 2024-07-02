@@ -16,7 +16,6 @@ namespace Boxey.Planets.Core.Generation {
         
         private float _rootNodeScale;
         private Camera _playerCamera;
-        private Plane[] _viewBounds;
         private Vector3 _playersLastPosition;
         private struct NodeUpdateCall {
             public readonly Node ParentNode;
@@ -104,7 +103,6 @@ namespace Boxey.Planets.Core.Generation {
         [SerializeField] private Gradient textColors;
         [Space(5f)]
         [SerializeField] private GameObject nodePrefab;
-        [SerializeField] private TMP_Text debugText;
         [SerializeField] private bool drawNodes;
         //update Queue
         private List<NodeUpdateCall> _nodesToUpdate;
@@ -114,16 +112,18 @@ namespace Boxey.Planets.Core.Generation {
             //Seed + starting position setting
             StartingPosition = transform.position;
             _playersLastPosition = player.transform.position;
-            if (randomSeed) RandomSeed();
-            if (!_playerCamera) _playerCamera = Helpers.GetCamera;
+            if (randomSeed) {
+                RandomSeed();
+            }
+            if (!_playerCamera) {
+                _playerCamera = Helpers.GetCamera;
+            }
             
             //Create dictionary. To-Do: get the dictionary from a file that contains the data
             _nodesToUpdate = new List<NodeUpdateCall>();
             _nodesToTerraform = new HashSet<NodeTerraformCall>();
             _modDataDictionary = new Dictionary<Vector3, float[]>();
             planetData.PlanetMaterial.SetVector(Center, StartingPosition);
-            //View bounds
-            _viewBounds = GeometryUtility.CalculateFrustumPlanes(_playerCamera);
             
             //Create root octree node
             RootNode = new Node(this, null, divisions, StartingPosition, true);
@@ -146,14 +146,15 @@ namespace Boxey.Planets.Core.Generation {
             var distanceFromRootNode = (player.position - transform.position).sqrMagnitude;
             var maxSplitDistance = (ChunkSize + ChunkSize) * splitMultiplier + splitRadius * _rootNodeScale;
             maxSplitDistance *= maxSplitDistance; 
-            if (distanceFromRootNode < maxSplitDistance && travelTree) TravelTree(RootNode, 0, true);
-            
-            debugText.text = $"Nodes to Update: {_nodesToUpdate.Count}" +
-                             $"\nNodes to Terraform: {_nodesToTerraform.Count}";
+            if (distanceFromRootNode < maxSplitDistance && travelTree) {
+                TravelTree(RootNode, 0, true);
+            }
         }
         //Main update calls
         private void HandelUpdateCalls() {
-            if (_nodesToUpdate.Count <= 0) return;
+            if (_nodesToUpdate.Count <= 0) {
+                return;
+            }
             var updateAmount = Mathf.Min(_nodesToUpdate.Count, maxNodeUpdatesPerFrame);
             var nodesToProcess = _nodesToUpdate.GetRange(0, updateAmount);
             foreach (var nodeUpdate in nodesToProcess) {
@@ -163,7 +164,9 @@ namespace Boxey.Planets.Core.Generation {
             }
         }
         private void HandelTerraformCalls() {
-            if (_nodesToTerraform.Count <= 0) return;
+            if (_nodesToTerraform.Count <= 0) {
+                return;
+            }
             var nodesToProcess = _nodesToTerraform.Take(maxNodeTerraformPerFrame).ToList();
             foreach (var nodeUpdate in nodesToProcess) {
                 _nodesToTerraform.Remove(nodeUpdate);
@@ -175,11 +178,15 @@ namespace Boxey.Planets.Core.Generation {
             if (checkDistance) {
                 //Distance check so we don't update every frame only on the root node so the whole tree updates
                 var distanceTraveled = (player.transform.position - _playersLastPosition).sqrMagnitude;
-                if (distanceTraveled < updateDistance * updateDistance) return;
+                if (distanceTraveled < updateDistance * updateDistance) {
+                    return;
+                }
             }
             _playersLastPosition = player.transform.position;
             //normal tree update
-            if (nodesCreated >= 8 * MaxNewNodes || currentNode.Divisions <= 1) return;
+            if (nodesCreated >= 8 * MaxNewNodes || currentNode.Divisions <= 1) {
+                return;
+            }
             var distanceFromNode = (player.position - currentNode.NodeWorldPosition()).sqrMagnitude;
             var splitDistance = ChunkSize * splitMultiplier + splitRadius * currentNode.NodeScale();
             splitDistance *= splitDistance;
@@ -211,7 +218,9 @@ namespace Boxey.Planets.Core.Generation {
         }
         private void UnSplitNode(Node currentNode){
             //If already has no children Leave function
-            if (currentNode.Children == null) return;
+            if (currentNode.Children == null) {
+                return;
+            }
 
             // Kill Children Nodes if any
             var children = currentNode.Children;
@@ -234,7 +243,6 @@ namespace Boxey.Planets.Core.Generation {
         //movement
         public float GetPlanetGravity() => planetData.PlanetGravity;
         public float GetPlanetRadius() => (planetRadius - (planetRadius * 0.025f)) * 0.5f;
-        public void ToggleTreeTravel() => travelTree = !travelTree;
         #region Terraforming
         /// <summary>
         /// Saves modification data for a specific position key in the modification data dictionary, adding or updating the entry as needed.
@@ -242,7 +250,9 @@ namespace Boxey.Planets.Core.Generation {
         /// <param name="positionKey">The position key for the modification data.</param>
         /// <param name="modData">The modification data to be saved.</param>
         public void SaveModTreeData(Vector3 positionKey, float[] modData){
-            if (modData == null) return;
+            if (modData == null) {
+                return;
+            }
             if (!_modDataDictionary.TryAdd(positionKey, modData)) {
                 _modDataDictionary[positionKey] = modData;
             }
@@ -292,7 +302,9 @@ namespace Boxey.Planets.Core.Generation {
                 Gizmos.DrawWireSphere(transform.position, planetRadius * 0.5f);
                 return;
             }
-            if (drawNodes) DrawTree(RootNode);
+            if (drawNodes) {
+                DrawTree(RootNode);
+            }
         }
         private static void DrawTree(Node parentNode){
             //Draw Node Outlines
@@ -300,7 +312,9 @@ namespace Boxey.Planets.Core.Generation {
             Gizmos.DrawWireCube(parentNode.NodeBounds.center, parentNode.NodeBounds.size);
 
             //If the children nodes exist go through and draw them
-            if (parentNode.Children == null) return;
+            if (parentNode.Children == null) {
+                return;
+            }
             for (var i = 0; i < 8; i++){
                 DrawTree(parentNode.Children[i]);
             }

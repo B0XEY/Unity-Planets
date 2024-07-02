@@ -52,10 +52,9 @@ MonoBehaviour:
       type: 3}
     hdrDebugViewPS: {fileID: 4800000, guid: 573620ae32aec764abd4d728906d2587, type: 3}
   m_RendererFeatures:
-  - {fileID: 1915132464187224300}
   - {fileID: 4643578692462907606}
   - {fileID: -1878332245247344467}
-  m_RendererFeatureMap: ecb0b251d4ea931ad610d3d2374e7140adc0de57c6d2eee5
+  m_RendererFeatureMap: d610d3d2374e7140adc0de57c6d2eee5
   m_UseNativeRenderPass: 0
   postProcessData: {fileID: 11400000, guid: 41439944d30ece34e96484bdb6645b55, type: 2}
   xrSystemData: {fileID: 11400000, guid: 60e1133243b97e347b653163a8c01b64, type: 2}
@@ -98,19 +97,6 @@ MonoBehaviour:
   m_CopyDepthMode: 0
   m_AccurateGbufferNormals: 0
   m_IntermediateTextureMode: 1
---- !u!114 &1915132464187224300
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1d6148c50694dd2a69649be44606f485, type: 3}
-  m_Name: DepthStackRenderFeature
-  m_EditorClassIdentifier: 
-  m_Active: 1
 --- !u!114 &4643578692462907606
 MonoBehaviour:
   m_ObjectHideFlags: 0

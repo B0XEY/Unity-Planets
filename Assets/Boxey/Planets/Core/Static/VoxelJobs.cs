@@ -45,6 +45,7 @@ namespace Boxey.Planets.Core.Static {
                 if (DoNoiseLayers) {
                     mapValue += GetValueAtPoint(voxelPosition);
                 }
+                //xyz will be used for uvs, and mesh colors.
                 Map[index] = new float4(0, 0, 0, mapValue);
             }
             private float GetValueAtPoint(float3 position) {
@@ -98,20 +99,27 @@ namespace Boxey.Planets.Core.Static {
             [ReadOnly] public NativeArray<float> ModMap;
             
             public NativeList<float3> Vertices;
+            public NativeList<float3> Normals;
             public NativeList<int> Triangles;
             
+            public NativeList<float3> OriginalVertices;
+            public NativeList<int> OriginalTriangles;
+            
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             private float SampleMap(int3 point){
                 var index = point.x + (CubeIntData.w + 1) * (point.y + (CubeIntData.w + 1) * point.z);
                 return NoiseMap[index].w + ModMap[index];
             }
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             private int GetCubeConfig(int3 point) {
                 var configIndex = 0;
                 var cornerTable = VoxelTables.CornerTable;
 
                 for (var i = 0; i < 8; i++) {
                     var sample = SampleMap(point + cornerTable[i]);
-                    if (sample < CubeFloatData.z)
+                    if (sample < CubeFloatData.z) {
                         configIndex |= 1 << i;
+                    }
                 }
 
                 return configIndex;
@@ -123,22 +131,31 @@ namespace Boxey.Planets.Core.Static {
                         for (var z = 0; z < CubeIntData.w; z++) {
                             var point = new int3(x, y, z);
                             var noiseValue = SampleMap(point);
-                            if (math.abs(noiseValue - CubeFloatData.y) < .001f) continue;
+                            if (math.abs(noiseValue - CubeFloatData.y) < .001f) {
+                                continue;
+                            }
                             CreateCube(point);
                         }
                     }
                 }
+                CalculateNormals();
+                CreateSkirt();
+                CalculateNormals();
             }
             private void CreateCube(int3 voxelPoint) {
                 var configIndex = GetCubeConfig(voxelPoint);
-                if (configIndex is 0 or 255) return;
+                if (configIndex is 0 or 255) {
+                    return;
+                }
             
                 var worldPosition = (voxelPoint * (int)CubeFloatData.x) - CubeIntData.xyz;
                 var edgeIndex = 0;
                 for (var i = 0; i < 5; i++) { //Mesh triangles
                     for (var j = 0; j < 3; j++) { // Mesh Vertex
                         var indice = VoxelTables.TriangleTable[configIndex * 16 + edgeIndex];
-                        if (indice == -1) return;
+                        if (indice == -1) {
+                            return;
+                        }
                         //Get Vert Positions
                         var corner1 = VoxelTables.CornerTable[VoxelTables.EdgeIndexes[indice * 2]];
                         var corner2 = VoxelTables.CornerTable[VoxelTables.EdgeIndexes[indice * 2 + 1]];
@@ -151,12 +168,75 @@ namespace Boxey.Planets.Core.Static {
                         if (difference != 0)
                             vertPosition += (vert2 - vert1) * ((CubeFloatData.z - vert1Sample) / difference);
                         //Add to the lists
-                        Vertices.Add(vertPosition);
-                        Triangles.Add(Vertices.Length - 1);
+                        if (math.all(math.isfinite(vertPosition))) {
+                            OriginalVertices.Add(vertPosition);
+                            Vertices.Add(vertPosition);
+                            OriginalTriangles.Add(OriginalVertices.Length - 1);
+                            Triangles.Add(OriginalVertices.Length - 1);
+                        }
                         
                         edgeIndex++;
                     }
                 }
+            }
+            private void CalculateNormals() {
+                var vertexNormals = new NativeArray<float3>(Vertices.Length, Allocator.Temp);
+                var triangleCont = Triangles.Length / 3;
+        
+                for (var i = 0; i < triangleCont; i++) {
+                    var normalTriangleIndex = i * 3;
+                    var vertexIndexA = Triangles[normalTriangleIndex];
+                    var vertexIndexB = Triangles[normalTriangleIndex + 1];
+                    var vertexIndexC = Triangles[normalTriangleIndex + 2];
+    
+                    var triangleNormal = SurfaceNormal(vertexIndexA, vertexIndexB, vertexIndexC);
+                    vertexNormals[vertexIndexA] += triangleNormal;
+                    vertexNormals[vertexIndexB] += triangleNormal;
+                    vertexNormals[vertexIndexC] += triangleNormal;
+                }
+    
+                for (var i = 0; i < vertexNormals.Length; i++) {
+                    vertexNormals[i] = math.normalize(vertexNormals[i]);
+                }
+        
+                Normals.CopyFrom(vertexNormals);
+                vertexNormals.Dispose();
+            }
+            private void CreateSkirt() {
+                var skirtHeight = CubeFloatData.x; // You can adjust this value for the skirt height
+                for (var i = 0; i < OriginalVertices.Length; i++) {
+                    var vert = OriginalVertices[i];
+                    var normal = Normals[i];
+                    var skirtVert = vert - normal * skirtHeight;
+                    if (!math.all(math.isfinite(skirtVert))) continue;
+                    Vertices.Add(vert);
+                    Vertices.Add(skirtVert);
+                    if (i % 3 != 0) continue;
+                    var baseIndex = Vertices.Length - 2;
+                    Triangles.Add(baseIndex);
+                    Triangles.Add(baseIndex + 1);
+                    Triangles.Add(baseIndex + 3);
+
+                    Triangles.Add(baseIndex);
+                    Triangles.Add(baseIndex + 3);
+                    Triangles.Add(baseIndex + 2);
+                    //other sided
+                    Triangles.Add(baseIndex);
+                    Triangles.Add(baseIndex + 3);
+                    Triangles.Add(baseIndex + 1);
+
+                    Triangles.Add(baseIndex);
+                    Triangles.Add(baseIndex + 2);
+                    Triangles.Add(baseIndex + 3);
+                }
+            }
+            private float3 SurfaceNormal(int indexA, int indexB, int indexC) {
+                var pointA = Vertices[indexA];
+                var pointB = Vertices[indexB];
+                var pointC = Vertices[indexC];
+                var sideAb = pointB - pointA; 
+                var sideAc = pointC - pointA;
+                return math.normalize(math.cross(sideAb, sideAc));
             }
         }
         [BurstCompile(OptimizeFor = OptimizeFor.Performance)]

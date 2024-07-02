@@ -8,7 +8,9 @@ namespace Boxey.Planets.Core.Static {
         private static Camera _camera;
         public static Camera GetCamera {
             get {
-                if (_camera == null) _camera = Camera.main;
+                if (_camera == null) {
+                    _camera = Camera.main;
+                }
                 return _camera;
             }
         }

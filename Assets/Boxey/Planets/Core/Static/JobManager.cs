@@ -9,7 +9,6 @@ using UnityEngine;
 
 namespace Boxey.Planets.Core.Static {
     public static class JobManager {
-        private const float Threshold = 0.001f; 
         private const int CurveSamples = 512; //Says how many times the height curves get sampled when making the arrays for them. larger means less artifacts.
         //General Functions
         private static float CalculateNoiseValueClamp(NoiseSettings settings) {
@@ -134,16 +133,18 @@ namespace Boxey.Planets.Core.Static {
             return map;
         }
         //Mesh
-        public static void GetPlanetMeshData(int chunkSize, int voxelScale, int3 centerOffset, float createGate, float valueGate, bool smoothTerrain, float4[] noiseMap, float[] modMap, out Vector3[] verticesArray, out int[] trianglesArray) {
-            var verticesList = new NativeList<float3>(Allocator.TempJob);
-            var trianglesList = new NativeList<int>(Allocator.TempJob);
+        public static void GetPlanetMeshData(int chunkSize, int voxelScale, int3 centerOffset, float createGate, float valueGate, bool smoothTerrain, float4[] noiseMap, float[] modMap, out Vector3[] verticesArray, out Vector3[] normalsArray, out int[] trianglesArray) {
             var noiseMapArray = new NativeArray<float4>(noiseMap, Allocator.TempJob);
             var modMapArray = new NativeArray<float>(modMap, Allocator.TempJob);
+            
             var marchingJob = new VoxelJobs.MarchCubes {
                 CubeIntData = new int4(centerOffset, chunkSize),
                 CubeFloatData = new float3(voxelScale, createGate, valueGate),
-                Vertices = verticesList,
-                Triangles = trianglesList,
+                Normals = new NativeList<float3>(Allocator.TempJob),
+                Vertices = new NativeList<float3>(Allocator.TempJob),
+                OriginalVertices = new NativeList<float3>(Allocator.TempJob),
+                Triangles = new NativeList<int>(Allocator.TempJob),
+                OriginalTriangles =  new NativeList<int>(Allocator.TempJob),
                 NoiseMap = noiseMapArray,
                 ModMap = modMapArray
             };
@@ -154,59 +155,43 @@ namespace Boxey.Planets.Core.Static {
             noiseMapArray.Dispose();
             modMapArray.Dispose();
             
-            verticesArray = verticesList.ToArray();
-            trianglesArray = trianglesList.ToArray();
-            verticesList.Dispose();
-            trianglesList.Dispose();
+            verticesArray = marchingJob.Vertices.ToArray();
+            normalsArray = marchingJob.Normals.ToArray();
+            trianglesArray = marchingJob.Triangles.ToArray();
+            marchingJob.Vertices.Dispose();
+            marchingJob.OriginalVertices.Dispose();
+            marchingJob.Triangles.Dispose();
+            marchingJob.OriginalTriangles.Dispose();
             
-            if  (smoothTerrain) RemoveDuplicateVertices(ref verticesArray, ref trianglesArray, out verticesArray, out trianglesArray, Threshold);
+            if (smoothTerrain) {
+                RemoveDuplicateVertices(ref verticesArray, ref normalsArray, ref trianglesArray, out verticesArray, out normalsArray, out trianglesArray);
+            }
         }
-        private static void RemoveDuplicateVertices(ref Vector3[] vertices, ref int[] triangles, out Vector3[] uniqueVertices, out int[] newTriangles, float threshold) {
+        private static void RemoveDuplicateVertices(ref Vector3[] vertices, ref Vector3[] normals, ref int[] triangles, out Vector3[] uniqueVertices, out Vector3[] uniqueNormals, out int[] newTriangles) {
             var uniqueVertexList = new List<Vector3>();
-            var vertexMap = new Dictionary<Vector3, int>(new Vector3EqualityComparer(threshold));
+            var uniqueNormalList = new List<Vector3>();
+            var vertexMap = new Dictionary<Vector3, int>();
             var newTrianglesList = new List<int>();
-            
-            var spatialHash = new Dictionary<Vector3Int, List<int>>();
-            for (var i = 0; i < vertices.Length; i++) {
-                var vertex = vertices[i];
-                var hash = GetSpatialHash(vertex, threshold);
 
-                if (!spatialHash.ContainsKey(hash)) {
-                    spatialHash[hash] = new List<int>();
+            // Mapping original vertex indices to unique vertices
+            for (var i = 0; i < vertices.Length; i++) {
+                if (vertexMap.ContainsKey(vertices[i])) {
+                    continue;
                 }
-                spatialHash[hash].Add(i);
+                vertexMap[vertices[i]] = uniqueVertexList.Count;
+                uniqueVertexList.Add(vertices[i]);
+                uniqueNormalList.Add(normals[i]);
             }
 
-            // Iterate through triangles and map them to unique vertices
             foreach (var oldIndex in triangles) {
                 var vertex = vertices[oldIndex];
-                var hash = GetSpatialHash(vertex, threshold);
-                // Check within the spatial hash cell for a close enough vertex
-                var found = false;
-                foreach (var existingIndex in spatialHash[hash]) {
-                    if (!vertexMap.TryGetValue(vertices[existingIndex], out var uniqueIndex)) continue;
-                    if (!(Vector3.SqrMagnitude(vertices[existingIndex] - vertex) < threshold * threshold)) continue;
-                    newTrianglesList.Add(uniqueIndex);
-                    found = true;
-                    break;
-                }
-                // If not found, add as a new unique vertex
-                if (found) continue;
-                var newIndex = uniqueVertexList.Count;
-                uniqueVertexList.Add(vertex);
-                vertexMap[vertex] = newIndex;
+                var newIndex = vertexMap[vertex];
                 newTrianglesList.Add(newIndex);
-                spatialHash[hash].Add(oldIndex);
             }
+
             uniqueVertices = uniqueVertexList.ToArray();
+            uniqueNormals = uniqueNormalList.ToArray();
             newTriangles = newTrianglesList.ToArray();
-        }
-        private static Vector3Int GetSpatialHash(Vector3 vertex, float cellSize) {
-            return new Vector3Int(
-                Mathf.FloorToInt(vertex.x / cellSize),
-                Mathf.FloorToInt(vertex.y / cellSize),
-                Mathf.FloorToInt(vertex.z / cellSize)
-            );
         }
     }
 }

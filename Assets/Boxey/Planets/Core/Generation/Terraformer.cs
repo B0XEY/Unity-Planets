@@ -8,7 +8,6 @@ namespace Boxey.Planets.Core.Generation {
     public class Terraformer : MonoBehaviour {
         private Camera _camera;
         private GameObject _point;
-        private PlanetaryObject _target;
         private bool _terraforming;
         
         [Header("Terraforming"), Line]
@@ -24,38 +23,46 @@ namespace Boxey.Planets.Core.Generation {
         }
         
         private void Update() {
-            if (!doTerraform) return;
+            if (!doTerraform) {
+                return;
+            }
             var ray = _camera.ScreenPointToRay(Input.mousePosition);
             if (Physics.Raycast(ray, out var hit)) {
-                if (hit.transform.name == "Sun" || hit.transform.gameObject.layer != 3) return;
-                _target = hit.transform.parent.GetComponentInParent<PlanetaryObject>();
-                if (_target == null) return;
+                if (hit.transform.name == "Sun" || hit.transform.gameObject.layer != 3) {
+                    return;
+                }
+                var target = hit.transform.parent.GetComponentInParent<PlanetaryObject>();
+                if (target == null) {
+                    return;
+                }
                 _point.transform.position = hit.point;
                 float3 terraformPoint = _point.transform.position;
                 //Call Function To Get all effected Nodes
                 if (Input.GetKey(KeyCode.Mouse0)) {
                     _terraforming = true;
-                    _target.Terrafrom(terraformPoint, brushRadius, brushSpeed, true);
+                    target.Terrafrom(terraformPoint, brushRadius, brushSpeed, true);
                 }
                 //Call Function To Get all effected Nodes
                 if (Input.GetKey(KeyCode.Mouse1)) {
                     _terraforming = true;
-                    _target.Terrafrom(terraformPoint, brushRadius, brushSpeed, false);
+                    target.Terrafrom(terraformPoint, brushRadius, brushSpeed, false);
                 }
                 //Call Function to End terraforming
                 if (Input.GetKeyUp(KeyCode.Mouse0) && _terraforming) {
                     _terraforming = false;
-                    _target.FinishTerrafrom();
+                    target.FinishTerrafrom();
                 }
                 if (Input.GetKeyUp(KeyCode.Mouse1) && _terraforming) {
                     _terraforming = false;
-                    _target.FinishTerrafrom();
+                    target.FinishTerrafrom();
                 }
             }
         }
 
         private void OnDrawGizmos() {
-            if (_point == null) return;
+            if (_point == null) {
+                return;
+            }
             Gizmos.color = Color.magenta;
             Gizmos.DrawWireSphere(_point.transform.position, brushRadius);
         }

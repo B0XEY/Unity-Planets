@@ -8,6 +8,8 @@ namespace Boxey.Planets.Core.Components {
         private PlanetaryObject[] _allPlanets;
         private PlanetaryObject _currentClosest;
 
+        private bool _useGravity = true;
+
         private Rigidbody _rb;
         
         [Header("Settings"), Line] 
@@ -24,6 +26,9 @@ namespace Boxey.Planets.Core.Components {
         }
 
         private void FixedUpdate() {
+            if (!_useGravity) {
+                return;
+            }
             var dirToCenter = _currentClosest.transform.position - transform.position;
             dirToCenter.Normalize();
             var g = GetGravityStrength();
@@ -32,12 +37,14 @@ namespace Boxey.Planets.Core.Components {
             if (alignToPlanet) {
                 var targetRotation = Quaternion.FromToRotation(transform.up, -dirToCenter);
                 targetRotation *= transform.rotation;
-                transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, 1);
+                transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, 1 * Time.deltaTime);
             }
         }
 
         private float GetGravityStrength() {
-            if (!_currentClosest) return 0f;
+            if (!_currentClosest) {
+                return 0f;
+            }
             var currentActiveGravity = _currentClosest.GetPlanetGravity();
             var dstToCenter = Vector3.Distance(transform.position, _currentClosest.transform.position);
             var dstToSurface = dstToCenter - _currentClosest.GetPlanetRadius();
@@ -61,5 +68,7 @@ namespace Boxey.Planets.Core.Components {
         private void GetAllPlanets() {
             _allPlanets = FindObjectsOfType<PlanetaryObject>();
         }
+
+        public void SetGravityUse(bool value) => _useGravity = value;
     }
 }

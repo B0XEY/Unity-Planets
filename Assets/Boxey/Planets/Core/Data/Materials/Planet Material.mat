@@ -140,7 +140,7 @@ Material:
     - _ZWrite: 1
     m_Colors:
     - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
-    - _Center: {r: 0, g: -2000, b: 0, a: 0}
+    - _Center: {r: 0, g: -3700, b: 0, a: 0}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _Dark_Grass: {r: 0.16078432, g: 0.6509804, b: 0.54509807, a: 1}
     - _Dark_Rock: {r: 0.32156855, g: 0.22745097, b: 0.14901957, a: 1}

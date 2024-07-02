@@ -12,10 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3809d83b02c81406f940133c41e93bf5, type: 3}
   m_Name: Atmosphere Profile
   m_EditorClassIdentifier: 
-  LUTSize: 512
+  LUTSize: 128
   opticalDepthCompute: {fileID: 7200000, guid: 9b0dc6063958035b09e19d4bfa8cf7bd, type: 3}
-  opticalDepthPoints: 15
-  inScatteringPoints: 18
+  opticalDepthPoints: 10
+  inScatteringPoints: 7
   sunIntensity: 29
   rayleighScatter:
     red: 0.81

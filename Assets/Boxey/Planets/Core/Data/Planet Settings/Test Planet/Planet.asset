@@ -27,7 +27,7 @@ MonoBehaviour:
     persistence: 0.53
     lacunarity: 1.72
     offset: {x: 0, y: 0, z: 0}
-    heightMultiplier: 2
+    heightMultiplier: 1
     heightCurve:
       serializedVersion: 2
       m_Curve:

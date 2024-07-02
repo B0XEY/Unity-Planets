@@ -22,10 +22,10 @@ namespace Boxey.Planets.Core.Static {
             new (1, 1, 1),
             new (0, 1, 1)
         };
-        public static readonly int[] EdgeIndexes = new int[] {
+        public static readonly int[] EdgeIndexes = {
             0, 1, 1, 2, 3, 2, 0, 3, 4, 5, 5, 6, 7, 6, 4, 7, 0, 4, 1, 5, 2, 6, 3, 7
         };
-        public static readonly int[] TriangleTable = new int[] { 
+        public static readonly int[] TriangleTable = { 
             -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
             0, 8, 3, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
             0, 1, 9, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,

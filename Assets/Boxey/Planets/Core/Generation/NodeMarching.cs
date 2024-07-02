@@ -34,38 +34,7 @@ namespace Boxey.Planets.Core.Generation {
         }
         
         public void Generate() {
-            JobManager.GetPlanetMeshData(_chunkSize, _voxelScale, _centerOffset, _createGate, _valueGate, _smoothTerrain, _noiseMap, _modMap, out VerticesArray, out TriangleArray);
-            CalculateNormals();
-        }
-        private void CalculateNormals() {
-            var vertexNormals = new Vector3[VerticesArray.Length];
-            var triangleCont = TriangleArray.Length / 3;
-                    
-            for (var i = 0; i < triangleCont; i++) {
-                var normalTriangleIndex = i * 3;
-                var vertexIndexA = TriangleArray[normalTriangleIndex];
-                var vertexIndexB = TriangleArray[normalTriangleIndex + 1];
-                var vertexIndexC = TriangleArray[normalTriangleIndex + 2];
-        
-                var triangleNormal = SurfaceNormal(vertexIndexA, vertexIndexB, vertexIndexC);
-                vertexNormals[vertexIndexA] += triangleNormal;
-                vertexNormals[vertexIndexB] += triangleNormal;
-                vertexNormals[vertexIndexC] += triangleNormal;
-            }
-        
-            for (var i = 0; i < vertexNormals.Length; i++) {
-                vertexNormals[i].Normalize();
-            }
-        
-            NormalArray = vertexNormals;
-        }
-        private Vector3 SurfaceNormal(int indexA, int indexB, int indexC) {
-            var pointA = VerticesArray[indexA];
-            var pointB = VerticesArray[indexB];
-            var pointC = VerticesArray[indexC];
-            var sideAb = pointB - pointA; 
-            var sideAc = pointC - pointA;
-            return Vector3.Cross(sideAb, sideAc).normalized;
+            JobManager.GetPlanetMeshData(_chunkSize, _voxelScale, _centerOffset, _createGate, _valueGate, _smoothTerrain, _noiseMap, _modMap, out VerticesArray, out NormalArray, out TriangleArray);
         }
     }
 }

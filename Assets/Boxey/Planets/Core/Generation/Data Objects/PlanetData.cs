@@ -54,7 +54,9 @@ namespace Boxey.Planets.Core.Generation.Data_Objects {
         public List<NoiseSettings> NoiseLayers => noiseLayers;
 
         private void OnValidate(){
-            if (noiseLayers.Count == 0) noiseLayers.Add(new NoiseSettings());
+            if (noiseLayers.Count == 0) {
+                noiseLayers.Add(new NoiseSettings());
+            }
         }
     }
 }
