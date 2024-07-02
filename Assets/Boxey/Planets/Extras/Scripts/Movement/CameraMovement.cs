@@ -12,6 +12,7 @@ namespace Boxey.Planets.Extras.Scripts.Movement {
         [SerializeField] private float rotationSpeed = 100f;
         [Space]
         [SerializeField] private float runMultiplier = 10;
+        [SerializeField] private Transform player;
         
 
         private void Awake() {
@@ -32,6 +33,12 @@ namespace Boxey.Planets.Extras.Scripts.Movement {
             _rotationY -= Input.GetAxis("Mouse Y") * rotationSpeed * Time.deltaTime;
             _rotationY = Mathf.Clamp(_rotationY, -90f, 90f);
             transform.rotation = Quaternion.Euler(_rotationY, _rotationX, 0);
+            
+            //teleport Player
+            if (Input.GetKeyDown(KeyCode.Space)) {
+                player.transform.position = new Vector3(transform.position.x, transform.position.y - 1.69f, transform.position.z);
+                player.GetComponent<PlayerMovement>().OnTeleport();
+            }
         }
     }
 }

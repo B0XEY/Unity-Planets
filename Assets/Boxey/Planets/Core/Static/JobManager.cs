@@ -140,10 +140,11 @@ namespace Boxey.Planets.Core.Static {
             var marchingJob = new VoxelJobs.MarchCubes {
                 CubeIntData = new int4(centerOffset, chunkSize),
                 CubeFloatData = new float3(voxelScale, createGate, valueGate),
-                Normals = new NativeList<float3>(Allocator.TempJob),
                 Vertices = new NativeList<float3>(Allocator.TempJob),
-                OriginalVertices = new NativeList<float3>(Allocator.TempJob),
+                Normals = new NativeList<float3>(Allocator.TempJob),
                 Triangles = new NativeList<int>(Allocator.TempJob),
+                OriginalVertices = new NativeList<float3>(Allocator.TempJob),
+                OriginalNormals = new NativeList<float3>(Allocator.TempJob),
                 OriginalTriangles =  new NativeList<int>(Allocator.TempJob),
                 NoiseMap = noiseMapArray,
                 ModMap = modMapArray
@@ -160,6 +161,8 @@ namespace Boxey.Planets.Core.Static {
             trianglesArray = marchingJob.Triangles.ToArray();
             marchingJob.Vertices.Dispose();
             marchingJob.OriginalVertices.Dispose();
+            marchingJob.Normals.Dispose();
+            marchingJob.OriginalNormals.Dispose();
             marchingJob.Triangles.Dispose();
             marchingJob.OriginalTriangles.Dispose();
             

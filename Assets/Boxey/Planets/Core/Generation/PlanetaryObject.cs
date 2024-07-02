@@ -3,7 +3,6 @@ using System.Linq;
 using Boxey.Attributes;
 using Boxey.Planets.Core.Static;
 using Boxey.Planets.Core.Generation.Data_Objects;
-using TMPro;
 using Unity.Mathematics;
 using UnityEngine;
 using Random = UnityEngine.Random;
@@ -13,8 +12,7 @@ namespace Boxey.Planets.Core.Generation {
     public class PlanetaryObject : MonoBehaviour {
         private const int MaxNewNodes = 5;
         public const int ChunkSize = 16;
-        
-        private float _rootNodeScale;
+
         private Camera _playerCamera;
         private Vector3 _playersLastPosition;
         private struct NodeUpdateCall {
@@ -127,7 +125,6 @@ namespace Boxey.Planets.Core.Generation {
             
             //Create root octree node
             RootNode = new Node(this, null, divisions, StartingPosition, true);
-            _rootNodeScale = RootNode.NodeScale();
             TravelTree(RootNode);
             //Atmosphere
             transform.GetChild(1).gameObject.TryGetComponent<AtmosphereEffect>(out var atmosphere);
@@ -142,13 +139,7 @@ namespace Boxey.Planets.Core.Generation {
             //Update the nodes that need it
             HandelUpdateCalls();
             HandelTerraformCalls();
-            //travel if we are not too far from the tree
-            var distanceFromRootNode = (player.position - transform.position).sqrMagnitude;
-            var maxSplitDistance = (ChunkSize + ChunkSize) * splitMultiplier + splitRadius * _rootNodeScale;
-            maxSplitDistance *= maxSplitDistance; 
-            if (distanceFromRootNode < maxSplitDistance && travelTree) {
-                TravelTree(RootNode, 0, true);
-            }
+            TravelTree(RootNode, 0, true);
         }
         //Main update calls
         private void HandelUpdateCalls() {
@@ -177,12 +168,13 @@ namespace Boxey.Planets.Core.Generation {
         private void TravelTree(Node currentNode, int nodesCreated = 0, bool checkDistance = false) {
             if (checkDistance) {
                 //Distance check so we don't update every frame only on the root node so the whole tree updates
-                var distanceTraveled = (player.transform.position - _playersLastPosition).sqrMagnitude;
+                var distanceTraveled = (player.position - _playersLastPosition).sqrMagnitude;
                 if (distanceTraveled < updateDistance * updateDistance) {
+                    _nodesToUpdate.Add(new NodeUpdateCall(null, currentNode));
                     return;
                 }
             }
-            _playersLastPosition = player.transform.position;
+            _playersLastPosition = player.position;
             //normal tree update
             if (nodesCreated >= 8 * MaxNewNodes || currentNode.Divisions <= 1) {
                 return;
@@ -232,7 +224,9 @@ namespace Boxey.Planets.Core.Generation {
             foreach (var childNode in children){
                 //check update Queue and remove from the queue if the childNode is In it
                 var nodeUpdateCall = new NodeUpdateCall(currentNode, childNode);
-                if (_nodesToUpdate.Contains(nodeUpdateCall)) _nodesToUpdate.Remove(nodeUpdateCall);
+                if (_nodesToUpdate.Contains(nodeUpdateCall)) {
+                    _nodesToUpdate.Remove(nodeUpdateCall);
+                }
                 // Destroy the object
                 childNode.DestroyNode();
             }
@@ -242,7 +236,7 @@ namespace Boxey.Planets.Core.Generation {
         }
         //movement
         public float GetPlanetGravity() => planetData.PlanetGravity;
-        public float GetPlanetRadius() => (planetRadius - (planetRadius * 0.025f)) * 0.5f;
+        public float GetPlanetRadius() => (planetRadius) * 0.5f;
         #region Terraforming
         /// <summary>
         /// Saves modification data for a specific position key in the modification data dictionary, adding or updating the entry as needed.
@@ -326,6 +320,14 @@ namespace Boxey.Planets.Core.Generation {
         }
         //Debug UI
         private void OnGUI() {
+            //check distance to see check distance
+            var dst = (_playerCamera.transform.position - transform.position).sqrMagnitude;
+            var maxDst = (ChunkSize + ChunkSize) * splitMultiplier + splitRadius * RootNode.NodeScale();
+            maxDst *= maxDst;
+            if (dst > maxDst) {
+                return;
+            }
+            //normal Call
             var style = new GUIStyle {
                 fontSize = 25,
                 normal = {
@@ -333,16 +335,15 @@ namespace Boxey.Planets.Core.Generation {
                 }
             };
             //Colors
-            var totalCallsTextColor = ColorUtility.ToHtmlStringRGB(textColors.Evaluate(Mathf.Clamp01((float)(_nodesToTerraform.Count + _nodesToUpdate.Count) / 1000)));
-            var updateTextColor = ColorUtility.ToHtmlStringRGB(textColors.Evaluate(Mathf.Clamp01((float)_nodesToUpdate.Count / 750)));
+            var updateCalls = Mathf.Clamp(_nodesToUpdate.Count - 1, 0, float.MaxValue);
+            var totalCallsTextColor = ColorUtility.ToHtmlStringRGB(textColors.Evaluate(Mathf.Clamp01((updateCalls + _nodesToTerraform.Count) / 1000)));
+            var updateTextColor = ColorUtility.ToHtmlStringRGB(textColors.Evaluate(Mathf.Clamp01(updateCalls / 750)));
             var terraformTextColor = ColorUtility.ToHtmlStringRGB(textColors.Evaluate(Mathf.Clamp01((float)_nodesToTerraform.Count / 250)));
-            
-            var displayText = $"Total Calls Remaining: <color=#{totalCallsTextColor}>{(_nodesToTerraform.Count + _nodesToUpdate.Count)}</color>" +
-                              $"\n  Nodes to Update: <color=#{updateTextColor}>{_nodesToUpdate.Count}</color>" +
+            var displayText = $"Total Calls Remaining: <color=#{totalCallsTextColor}>{updateCalls + _nodesToTerraform.Count}</color>" +
+                              $"\n  Nodes to Update: <color=#{updateTextColor}>{updateCalls}</color>" +
                               $"\n  Nodes to Terraform: <color=#{terraformTextColor}>{_nodesToTerraform.Count}</color>";
             GUI.Label(new Rect(10f, 10f, 300f, 100f), displayText, style);
         }
-
         #endregion
     }
 }

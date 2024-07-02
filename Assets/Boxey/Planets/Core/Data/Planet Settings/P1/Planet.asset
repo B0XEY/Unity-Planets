@@ -15,7 +15,7 @@ MonoBehaviour:
   planetGravity: 9.81
   atmosphereScale: 1.4
   atmosphere: {fileID: 11400000, guid: 4b8297e2d56d1e9468c7e1c4eabab055, type: 2}
-  planetMaterial: {fileID: 2100000, guid: 0793c3bc75f6f6b48a14b55adef66d1f, type: 2}
+  planetMaterial: {fileID: 2100000, guid: df0645c657084df43aee25a8d1d2fb83, type: 2}
   groundToughness: 1
   useNoise: 1
   noiseLayers:

@@ -22,15 +22,14 @@ namespace Boxey.Planets.Core.Components {
             _rb.interpolation = RigidbodyInterpolation.Interpolate;
             _rb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
             GetAllPlanets();
-            FindClosestPlanets();
+            FindClosestPlanet();
         }
 
         private void FixedUpdate() {
             if (!_useGravity) {
                 return;
             }
-            var dirToCenter = _currentClosest.transform.position - transform.position;
-            dirToCenter.Normalize();
+            var dirToCenter = GetDirectionToCenter();
             var g = GetGravityStrength();
             _rb.AddForce(dirToCenter * (g * _rb.mass));
 
@@ -48,27 +47,35 @@ namespace Boxey.Planets.Core.Components {
             var currentActiveGravity = _currentClosest.GetPlanetGravity();
             var dstToCenter = Vector3.Distance(transform.position, _currentClosest.transform.position);
             var dstToSurface = dstToCenter - _currentClosest.GetPlanetRadius();
-            if (dstToSurface > 0) currentActiveGravity = _currentClosest.GetPlanetGravity() / (dstToSurface);
+            if (dstToSurface > 0) {
+                currentActiveGravity = _currentClosest.GetPlanetGravity() / (dstToSurface);
+            }
             return Mathf.Abs(currentActiveGravity);
         }
-        private void FindClosestPlanets() {
+        private void GetAllPlanets() {
+            _allPlanets = FindObjectsOfType<PlanetaryObject>();
+        }
+        
+        public void FindClosestPlanet() {
             if (_allPlanets.Length <= 0) {
                 Debug.LogWarning("No planets created!");
                 return;
             }
             _currentClosest = _allPlanets[0];
-            var dst = Vector3.Distance(_currentClosest.transform.position, transform.position);
+            var dst = float.MaxValue;
             foreach (var pObj in _allPlanets) {
                 var dstFromPlanet = Vector3.Distance(pObj.transform.position, transform.position);
-                if (dstFromPlanet >= dst) return;
-                _currentClosest = pObj; // closer planet
-                dst = dstFromPlanet;
+                if (dstFromPlanet < dst) {
+                    _currentClosest = pObj; // closer planet
+                    dst = dstFromPlanet;
+                }
             }
         }
-        private void GetAllPlanets() {
-            _allPlanets = FindObjectsOfType<PlanetaryObject>();
+        public Vector3 GetDirectionToCenter() {
+            var dirToCenter = _currentClosest.transform.position - transform.position;
+            dirToCenter.Normalize();
+            return dirToCenter;
         }
-
         public void SetGravityUse(bool value) => _useGravity = value;
     }
 }

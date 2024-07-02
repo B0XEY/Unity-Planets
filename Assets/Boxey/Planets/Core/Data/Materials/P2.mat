@@ -20,14 +20,12 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Planet Material
+  m_Name: P2
   m_Shader: {fileID: 4800000, guid: 2918676f685de894fb9f7d8ae4c773ea, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
-  m_ValidKeywords:
-  - _RECEIVE_SHADOWS_OFF
-  m_InvalidKeywords:
-  - _RECEIVESHADOWS_OFF
+  m_ValidKeywords: []
+  m_InvalidKeywords: []
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 1
   m_DoubleSidedGI: 0
@@ -115,14 +113,14 @@ Material:
     - _GlossMapScale: 0
     - _Glossiness: 0
     - _GlossyReflections: 0
-    - _GrassWarping: 1
+    - _GrassWarping: 10
     - _Metallic: 0
     - _OcclusionStrength: 1
     - _Parallax: 0.005
     - _QueueControl: 0
     - _QueueOffset: 0
     - _Radius: 3600
-    - _ReceiveShadows: 0
+    - _ReceiveShadows: 1
     - _S: 1000
     - _S1: -5
     - _Sand_Height: 0
@@ -140,13 +138,13 @@ Material:
     - _ZWrite: 1
     m_Colors:
     - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
-    - _Center: {r: 0, g: -3700, b: 0, a: 0}
+    - _Center: {r: -15000, g: 0, b: 10000, a: 0}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
-    - _Dark_Grass: {r: 0.16078432, g: 0.6509804, b: 0.54509807, a: 1}
+    - _Dark_Grass: {r: 0.6981132, g: 0.3898575, b: 0.36552152, a: 1}
     - _Dark_Rock: {r: 0.32156855, g: 0.22745097, b: 0.14901957, a: 1}
     - _Dark_Sand: {r: 0.8396226, g: 0.8396041, b: 0, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
-    - _Grass: {r: 0.83921576, g: 0.34901962, b: 0.454902, a: 1}
+    - _Grass: {r: 0.2506675, g: 0.39497125, b: 0.4056604, a: 1}
     - _RockColor: {r: 0.32156855, g: 0.19999996, b: 0.09803919, a: 1}
     - _Sand: {r: 0.92737895, g: 1, b: 0.3160377, a: 1}
     - _SpecColor: {r: 0.19999996, g: 0.19999996, b: 0.19999996, a: 1}

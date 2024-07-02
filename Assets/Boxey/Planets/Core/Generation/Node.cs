@@ -17,8 +17,8 @@ namespace Boxey.Planets.Core.Generation {
         public Bounds NodeBounds { get; }
         public Node ParentNode { get; }
         public Node[] Children;
-        public readonly int Divisions;
-        
+        public int Divisions { get; }
+
         //Terraforming data done to chunk
         private float4[] _planetMap;
         private float[] _modData;
@@ -32,7 +32,9 @@ namespace Boxey.Planets.Core.Generation {
             Divisions = divisions;
             _offset = offset;
             NodeBounds = new Bounds(NodeLocalPosition(), Vector3.one * NodeScale());
-            if (isRoot) return;
+            if (isRoot) {
+                return;
+            }
             _modData = _planetaryObject.TryGetModTreeData(NodeLocalPosition());
         }
         
@@ -91,8 +93,10 @@ namespace Boxey.Planets.Core.Generation {
         public void TrySplitNode(){
             //make sure all children are generated
             var childNodesGenerated = Children.Sum(node => node._isGenerated ? 1 : 0);
-            if (childNodesGenerated == 0 && _nodeObject) _nodeObject.SetActive(true);
-            if (childNodesGenerated < 7) {
+            if (childNodesGenerated == 0 && _nodeObject) {
+                _nodeObject.SetActive(true);
+            }
+            if (childNodesGenerated < 6) {
                 return;
             }
             //Split the node

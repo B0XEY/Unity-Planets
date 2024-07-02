@@ -103,7 +103,9 @@ namespace Boxey.Planets.Core.Static {
             public NativeList<int> Triangles;
             
             public NativeList<float3> OriginalVertices;
+            public NativeList<float3> OriginalNormals;
             public NativeList<int> OriginalTriangles;
+            
             
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             private float SampleMap(int3 point){
@@ -124,7 +126,6 @@ namespace Boxey.Planets.Core.Static {
 
                 return configIndex;
             }
-            
             public void Execute() {
                 for (var x = 0; x < CubeIntData.w; x++) {
                     for (var y = 0; y < CubeIntData.w; y++) {
@@ -138,9 +139,9 @@ namespace Boxey.Planets.Core.Static {
                         }
                     }
                 }
-                CalculateNormals();
+                CalculateNormals(true);
                 CreateSkirt();
-                CalculateNormals();
+                CalculateNormals(false);
             }
             private void CreateCube(int3 voxelPoint) {
                 var configIndex = GetCubeConfig(voxelPoint);
@@ -165,8 +166,9 @@ namespace Boxey.Planets.Core.Static {
                         var vert2Sample = SampleMap(voxelPoint + corner2);
                         var difference = vert2Sample - vert1Sample;
                         var vertPosition = vert1;
-                        if (difference != 0)
+                        if (difference != 0) {
                             vertPosition += (vert2 - vert1) * ((CubeFloatData.z - vert1Sample) / difference);
+                        }
                         //Add to the lists
                         if (math.all(math.isfinite(vertPosition))) {
                             OriginalVertices.Add(vertPosition);
@@ -179,7 +181,47 @@ namespace Boxey.Planets.Core.Static {
                     }
                 }
             }
-            private void CalculateNormals() {
+            private void CreateSkirt() {
+                var skirtHeight = CubeFloatData.x;
+                var flareAmount = skirtHeight * 0.1f;
+                for (var i = 0; i < OriginalVertices.Length; i++) {
+                    var vert = OriginalVertices[i];
+                    var normal = OriginalNormals[i];
+                    var perpVector = math.cross(normal, new float3(0.0f, 1.0f, 0.0f));
+                    if (math.length(perpVector) == 0) {
+                        perpVector = math.cross(normal, new float3(1.0f, 0.0f, 0.0f));
+                    }
+                    perpVector = math.normalize(perpVector) * flareAmount;
+                    
+                    var skirtVert = vert - normal * skirtHeight + perpVector;
+                    if (!math.all(math.isfinite(skirtVert))) {
+                        continue;
+                    }
+                    Vertices.Add(vert);
+                    Vertices.Add(skirtVert);
+                    if (i % 3 != 0) {
+                        continue;
+                    }
+                    var baseIndex = Vertices.Length - 2;
+                    Triangles.Add(baseIndex);
+                    Triangles.Add(baseIndex + 1);
+                    Triangles.Add(baseIndex + 3);
+
+                    Triangles.Add(baseIndex);
+                    Triangles.Add(baseIndex + 3);
+                    Triangles.Add(baseIndex + 2);
+                    //other sided
+                    Triangles.Add(baseIndex);
+                    Triangles.Add(baseIndex + 3);
+                    Triangles.Add(baseIndex + 1);
+
+                    Triangles.Add(baseIndex);
+                    Triangles.Add(baseIndex + 2);
+                    Triangles.Add(baseIndex + 3);
+                }
+            }
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            private void CalculateNormals(bool firstPass) {
                 var vertexNormals = new NativeArray<float3>(Vertices.Length, Allocator.Temp);
                 var triangleCont = Triangles.Length / 3;
         
@@ -199,37 +241,14 @@ namespace Boxey.Planets.Core.Static {
                     vertexNormals[i] = math.normalize(vertexNormals[i]);
                 }
         
-                Normals.CopyFrom(vertexNormals);
+                if (firstPass) {
+                    OriginalNormals.CopyFrom(vertexNormals);
+                }else {
+                    Normals.CopyFrom(vertexNormals);
+                }
                 vertexNormals.Dispose();
             }
-            private void CreateSkirt() {
-                var skirtHeight = CubeFloatData.x; // You can adjust this value for the skirt height
-                for (var i = 0; i < OriginalVertices.Length; i++) {
-                    var vert = OriginalVertices[i];
-                    var normal = Normals[i];
-                    var skirtVert = vert - normal * skirtHeight;
-                    if (!math.all(math.isfinite(skirtVert))) continue;
-                    Vertices.Add(vert);
-                    Vertices.Add(skirtVert);
-                    if (i % 3 != 0) continue;
-                    var baseIndex = Vertices.Length - 2;
-                    Triangles.Add(baseIndex);
-                    Triangles.Add(baseIndex + 1);
-                    Triangles.Add(baseIndex + 3);
-
-                    Triangles.Add(baseIndex);
-                    Triangles.Add(baseIndex + 3);
-                    Triangles.Add(baseIndex + 2);
-                    //other sided
-                    Triangles.Add(baseIndex);
-                    Triangles.Add(baseIndex + 3);
-                    Triangles.Add(baseIndex + 1);
-
-                    Triangles.Add(baseIndex);
-                    Triangles.Add(baseIndex + 2);
-                    Triangles.Add(baseIndex + 3);
-                }
-            }
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             private float3 SurfaceNormal(int indexA, int indexB, int indexC) {
                 var pointA = Vertices[indexA];
                 var pointB = Vertices[indexB];

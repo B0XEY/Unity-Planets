@@ -13,14 +13,12 @@ namespace Boxey.Planets.Extras.Scripts.Movement {
         private Rigidbody _rb;
         private PlanetaryGravity _gravity;
         private Vector2 _rotation;
-        private Vector3 _cameraHeadPos;
         private Quaternion _cameraHeadRot;
         
         [Header("Movement Settings"), Line]
         [SerializeField] private float speed = 7;
         [SerializeField] private float runMultiplier = 1.5f;
-        [SerializeField] private bool canJump = true;
-        [SerializeField, ShowIf("canJump")] private float jumpHeight = 2.0f;
+        [SerializeField] private float jumpHeight = 2.0f;
         
         [Header("Look Settings"), Line]
         [SerializeField] private Camera playerCamera;
@@ -40,6 +38,7 @@ namespace Boxey.Planets.Extras.Scripts.Movement {
             if (!playerCamera) {
                 playerCamera = Helpers.GetCamera;
             }
+            playerCamera.transform.localPosition = new Vector3(0, 1.69f, 0);
             freeCam.enabled = false;
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;
@@ -51,11 +50,10 @@ namespace Boxey.Planets.Extras.Scripts.Movement {
                     freeCam.enabled = false;
                     Cursor.visible = false;
                     Cursor.lockState = CursorLockMode.Locked;
-                    playerCamera.transform.localPosition = _cameraHeadPos;
+                    playerCamera.transform.localPosition = new Vector3(0, 1.69f, 0);
                     playerCamera.transform.localRotation = _cameraHeadRot;
                     _gravity.SetGravityUse(true);
                 }else {
-                    _cameraHeadPos = playerCamera.transform.localPosition;
                     _cameraHeadRot = playerCamera.transform.localRotation;
                     freeCam.enabled  = true;
                     _gravity.SetGravityUse(false);
@@ -69,8 +67,12 @@ namespace Boxey.Planets.Extras.Scripts.Movement {
             playerCamera.transform.localRotation = Quaternion.Euler(_rotation.x, 0, 0);
             var localRotation = Quaternion.Euler(0f, Input.GetAxis("Mouse X") * lookSpeed, 0f);
             transform.rotation *=localRotation;
+            //grounded Check
+            _grounded = !Physics.SphereCast(transform.position, 0.25f, _gravity.GetDirectionToCenter(), out var hit);
+            if (_grounded && Input.GetKeyDown(KeyCode.Space)) {
+                _rb.AddForce(transform.up * jumpHeight, ForceMode.VelocityChange);
+            }
         }
-
         private void FixedUpdate() {
             if (freeCam.enabled || !_grounded) {
                 return;
@@ -94,15 +96,16 @@ namespace Boxey.Planets.Extras.Scripts.Movement {
             velocityChange = transform.TransformDirection(velocityChange);
 
             _rb.AddForce(velocityChange, ForceMode.VelocityChange);
-
-            if (Input.GetKeyDown(KeyCode.Space) && canJump && _grounded) {
-                _rb.AddForce(transform.up * jumpHeight, ForceMode.VelocityChange);
-                _grounded = false;
-            }
         }
 
-        private void OnCollisionEnter() {
-            _grounded = true;
+        public void OnTeleport() {
+            freeCam.enabled = false;
+            Cursor.visible = false;
+            Cursor.lockState = CursorLockMode.Locked;
+            playerCamera.transform.localPosition = new Vector3(0, 1.69f, 0);
+            playerCamera.transform.localRotation = _cameraHeadRot;
+            _gravity.SetGravityUse(true);
+            _gravity.FindClosestPlanet();
         }
     }
 }
