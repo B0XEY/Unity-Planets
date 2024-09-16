@@ -6,12 +6,12 @@
 
 
 #define MAX_LOOP_ITERATIONS 30
-#pragma shader_feature DIRECTIONAL_SUN 
+#pragma shader_feature DIRECTIONAL_SUN
 
 
-TEXTURE2D(_BakedOpticalDepth);
+TEXTURE2D (_BakedOpticalDepth);
 float4 _BakedOpticalDepth_TexelSize;
-SAMPLER(sampler_BakedOpticalDepth);
+SAMPLER (sampler_BakedOpticalDepth);
 
 
 float3 _SunParams;
@@ -34,7 +34,7 @@ float3 _MieScattering;
 float _MieG;
 
 // Ozone absorbtion coefficients
-float3 _AbsorbtionBeta; 
+float3 _AbsorbtionBeta;
 
 // Ambient atmosphere color
 float3 _AmbientBeta;
@@ -46,7 +46,6 @@ float _HeightAbsorbtion;
 
 // Light intensity
 float _Intensity;
-
 
 
 float3 DensityAtPoint(float3 position)
@@ -74,23 +73,22 @@ float3 DensityAtPoint(float3 position)
 
 // When baked, this is reduced to only 1 call to OpticalDepthBaked, reducing the iterations to only 20, while keeping near identical visual quality.
 
-float3 OpticalDepthBaked(float3 rayOrigin, float3 rayDir) 
+float3 OpticalDepthBaked(float3 rayOrigin, float3 rayDir)
 {
-	float rayLen = length(rayOrigin);
-	float height = rayLen - _PlanetRadius;
+    float rayLen = length(rayOrigin);
+    float height = rayLen - _PlanetRadius;
 
-	float height01 = saturate(height / (_AtmosphereRadius - _PlanetRadius));
+    float height01 = saturate(height / (_AtmosphereRadius - _PlanetRadius));
 
     float3 normal = rayOrigin / rayLen;
 
-	float uvX = 1 - (dot(normal, rayDir) * 0.5 + 0.5);
+    float uvX = 1 - (dot(normal, rayDir) * 0.5 + 0.5);
 
-	return SAMPLE_TEXTURE2D(_BakedOpticalDepth, sampler_BakedOpticalDepth, float2(uvX, height01)).xyz;
+    return SAMPLE_TEXTURE2D(_BakedOpticalDepth, sampler_BakedOpticalDepth, float2(uvX, height01)).xyz;
 }
 
 
-
-float3 CalculateScattering(float3 start, float3 dir, float sceneDepth, float3 sceneColor) 
+float3 CalculateScattering(float3 start, float3 dir, float sceneDepth, float3 sceneColor)
 {
     // add an offset to the camera position, so that the atmosphere is in the correct position
     start -= _PlanetCenter;
@@ -102,15 +100,15 @@ float3 CalculateScattering(float3 start, float3 dir, float sceneDepth, float3 sc
     rayLength.y = min(rayLength.x + rayLength.y, sceneDepth);
 
     // Did the ray miss the atmosphere?   
-    if (rayLength.x > rayLength.y) 
+    if (rayLength.x > rayLength.y)
     {
         return sceneColor;
     }
 
     // Get camera-relative sun direction
     #if !defined(DIRECTIONAL_SUN)
-        float3 sunPos = _SunParams.xyz - _PlanetCenter;
-        float3 dirToSun = -normalize(start - sunPos.xyz);
+    float3 sunPos = _SunParams.xyz - _PlanetCenter;
+    float3 dirToSun = -normalize(start - sunPos.xyz);
     #else
         float3 dirToSun = _SunParams.xyz;
     #endif
@@ -129,7 +127,8 @@ float3 CalculateScattering(float3 start, float3 dir, float sceneDepth, float3 sc
     float phaseRay = 3.0 / (50.2654824574) * (1.0 + mumu);
 
     // Magic number is (pi * 8)
-    float phaseMie = 3.0 / (25.1327412287) * ((1.0 - gg) * (mumu + 1.0)) / (pow(abs(1.0 + gg - 2.0 * mu * _MieG), 1.5) * (2.0 + gg));
+    float phaseMie = 3.0 / (25.1327412287) * ((1.0 - gg) * (mumu + 1.0)) / (pow(abs(1.0 + gg - 2.0 * mu * _MieG), 1.5) *
+        (2.0 + gg));
 
     // Does object block mie glow?
     phaseMie = sceneDepth > rayLength.y ? phaseMie : 0.0;
@@ -146,18 +145,18 @@ float3 CalculateScattering(float3 start, float3 dir, float sceneDepth, float3 sc
 
     // Primary in-scatter loop
     [unroll(MAX_LOOP_ITERATIONS)]
-    for (int i = 0; i < _NumInScatteringPoints; i++) 
+    for (int i = 0; i < _NumInScatteringPoints; i++)
     {
         // Particle density at sample position
         float3 density = DensityAtPoint(inScatterPoint) * inScatterStepSize;
-        
+
         // Accumulate optical depth
         opticalDepth += density;
 
         // Get sample point relative sun direction
-    #if !defined(DIRECTIONAL_SUN)
+        #if !defined(DIRECTIONAL_SUN)
         dirToSun = -normalize(inScatterPoint - sunPos.xyz);
-    #endif
+        #endif
 
         // Light ray optical depth - Original optical depth function can be found in OutScattering.compute
         //float3 lightOpticalDepth = OpticalDepth(inScatterPoint, dirToSun);
@@ -165,8 +164,8 @@ float3 CalculateScattering(float3 start, float3 dir, float sceneDepth, float3 sc
 
         // Attenuation calculation
         float3 attenuation = exp(
-            -_RayleighScattering * (opticalDepth.x + lightOpticalDepth.x) 
-            - _MieScattering * (opticalDepth.y + lightOpticalDepth.y) 
+            -_RayleighScattering * (opticalDepth.x + lightOpticalDepth.x)
+            - _MieScattering * (opticalDepth.y + lightOpticalDepth.y)
             - _AbsorbtionBeta * (opticalDepth.z + lightOpticalDepth.z)
         );
 
@@ -181,8 +180,8 @@ float3 CalculateScattering(float3 start, float3 dir, float sceneDepth, float3 sc
     // Calculate how much light can pass through the atmosphere
     float3 opacity = exp(
         -(_MieScattering * opticalDepth.y
-        + _RayleighScattering * opticalDepth.x 
-        + _AbsorbtionBeta * opticalDepth.z)
+            + _RayleighScattering * opticalDepth.x
+            + _AbsorbtionBeta * opticalDepth.z)
     );
 
 
@@ -192,7 +191,6 @@ float3 CalculateScattering(float3 start, float3 dir, float sceneDepth, float3 sc
 
     float3 ambient = opticalDepth.x * _AmbientBeta * 0.00001 /* Fudge factor */;
 
-	// Apply final color
+    // Apply final color
     return (rayleigh + mie + ambient) * _Intensity + sceneColor * opacity;
 }
-

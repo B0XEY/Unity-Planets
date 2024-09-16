@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3809d83b02c81406f940133c41e93bf5, type: 3}
+  m_Name: Atmosphere Profile
+  m_EditorClassIdentifier: 
+  LUTSize: 128
+  opticalDepthCompute: {fileID: 7200000, guid: 9b0dc6063958035b09e19d4bfa8cf7bd, type: 3}
+  opticalDepthPoints: 10
+  inScatteringPoints: 11
+  sunIntensity: 28.88
+  rayleighScatter:
+    red: 0.33
+    green: 0.55
+    blue: 0.8
+    power: 0.79
+  rayleighDensityFalloff: 12.7
+  mieScatter:
+    red: 0.94
+    green: 1.34
+    blue: 1.35
+    power: 0.56
+  mieDensityFalloff: 23.4
+  mieG: 0.999
+  heightAbsorbtion: 100
+  absorbtionColor: {r: 0.29383236, g: 0.6505352, b: 0.8773585, a: 1}
+  ambientColor: {r: 1, g: 1, b: 1, a: 1}

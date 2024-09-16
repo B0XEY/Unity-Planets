@@ -1,0 +1,42 @@
+// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel CSMain
+
+RWStructuredBuffer<float3> vertices;
+RWStructuredBuffer<int> triangles; 
+RWStructuredBuffer<float3> grass_positions;
+
+int density;
+
+float rand(uint seed){
+    seed = (seed << 13) ^ seed;
+    return 1.0f - ((seed * (seed * seed * 15731u + 789221u) + 1376312589u) & 0x7fffffff) / 2147483648.0f;
+}
+
+[numthreads(128,1,1)]
+void CSMain (uint3 id : SV_DispatchThreadID){
+    const uint index = id.x;
+
+    const uint triangle_index = index / 3;
+
+    const int idx0 = triangles[triangle_index * 3 + 0];
+    const int idx1 = triangles[triangle_index * 3 + 1];
+    const int idx2 = triangles[triangle_index * 3 + 2];
+
+    const float3 v0 = vertices[idx0];
+    const float3 v1 = vertices[idx1];
+    const float3 v2 = vertices[idx2];
+
+    const uint points_per_triangle = max(1, (uint)(density));
+    
+    for (uint i = 0; i < points_per_triangle; i++){
+        float u = rand(triangle_index);
+        float v = rand(triangle_index + 1);
+        if (u + v > 1.0f) {
+            u = 1.0f - u;
+            v = 1.0f - v;
+        }
+        
+        const float3 random_point = (1.0f - u - v) * v0 + u * v1 + v * v2;
+        grass_positions[triangle_index * points_per_triangle + i] = random_point;
+    }
+}

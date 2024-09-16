@@ -1,0 +1,101 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!21 &2100000
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: PGDemo_MeshBlades_Brightened
+  m_Shader: {fileID: -6465566751694194690, guid: d3bec30df35ceda4b97923f8a281f40b,
+    type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords:
+  - BOOLEAN_ALBEDOTEX_ON
+  - BOOLEAN_GROUNDCOL_ON
+  - ENUM_TRANSFORM_TRANSFORM_MATRIX
+  m_InvalidKeywords: []
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_LockedProperties: 
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs:
+    - Texture2D_7c9c568b92ad48b28daad6c3b6a3879d:
+        m_Texture: {fileID: 2800000, guid: 50e483ef3f865f8408853a2d297f215f, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _GroundTex:
+        m_Texture: {fileID: 2800000, guid: 05b9142fbb56c144da2dd4402f3bd5f1, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _MainTex:
+        m_Texture: {fileID: 2800000, guid: 23f1baaf10135bd4a95a101f27a51f8f, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _SampleTexture2D_218d06c73513437dbf1c0ae18893259d_Texture_1:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _SubsurfaceMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - unity_Lightmaps:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - unity_LightmapsInd:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - unity_ShadowMasks:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    m_Ints: []
+    m_Floats:
+    - BOOLEAN_ALBEDOTEX: 1
+    - BOOLEAN_BLADECOL: 0
+    - BOOLEAN_DISPLACEMENT: 0
+    - BOOLEAN_GROUNDCOL: 1
+    - BOOLEAN_USEMESHNORMALS: 0
+    - ENUM_TRANSFORM: 1
+    - Vector1_BD8CCDF7: 0.5
+    - _Height: 1
+    - _QueueControl: -1
+    - _QueueOffset: 0
+    - _Smoothness: 0.15
+    - _SubsurfaceDist: 0.85
+    - _SubsurfacePow: 2
+    - _TopBright: 1.375
+    - _Width: 1
+    - _WindScale: 0.4
+    - _WindStr: 0.25
+    m_Colors:
+    - _BottomCol: {r: 1, g: 1, b: 1, a: 1}
+    - _NoiseRange: {r: -0.45, g: 1, b: 0, a: 0}
+    - _SubsurfaceCol: {r: 0.19291806, g: 0.3018868, b: 0.14382343, a: 1}
+    - _TopCol: {r: 1, g: 1, b: 1, a: 1}
+    - _WindDirection: {r: 0.35, g: -0.1, b: 0.45, a: 0}
+    - _WindScroll: {r: 0.75, g: -0.1, b: 0.25, a: 0}
+  m_BuildTextureStacks: []
+--- !u!114 &4238476926583517821
+MonoBehaviour:
+  m_ObjectHideFlags: 11
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d0353a89b1f911e48b9e16bdc9f2e058, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  version: 7

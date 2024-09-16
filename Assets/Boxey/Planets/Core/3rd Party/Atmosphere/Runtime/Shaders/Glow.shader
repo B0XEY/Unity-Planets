@@ -8,14 +8,16 @@ Shader "Custom/Glow"
     }
 
     SubShader
-    {   
-        Tags { "RenderType"="Opaque" }
+    {
+        Tags
+        {
+            "RenderType"="Opaque"
+        }
         LOD 100
 
         Pass
         {
             HLSLPROGRAM
-
             #pragma vertex vert
             #pragma fragment frag
 
@@ -36,30 +38,29 @@ Shader "Custom/Glow"
                 float4 vertex : SV_POSITION;
             };
 
-            
-            TEXTURE2D(_MainTex);
-            SAMPLER(sampler_MainTex);
+
+            TEXTURE2D (_MainTex);
+            SAMPLER (sampler_MainTex);
 
             half4 _MainColor;
             half _Glow;
 
 
-            v2f vert (appdata v)
+            v2f vert(appdata v)
             {
                 v2f output;
-	            output.vertex = TransformObjectToHClip(v.vertex.xyz);
-	            output.uv = v.uv.xy;
-	            return output;
+                output.vertex = TransformObjectToHClip(v.vertex.xyz);
+                output.uv = v.uv.xy;
+                return output;
             }
 
-            half4 frag (v2f i) : SV_Target
+            half4 frag(v2f i) : SV_Target
             {
                 // sample the texture
                 half4 col = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, i.uv);
 
                 return col * _MainColor * _Glow;
             }
-
             ENDHLSL
         }
     }

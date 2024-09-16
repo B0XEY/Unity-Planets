@@ -3,11 +3,13 @@ using UnityEngine;
 
 namespace Boxey.Attributes {
     public class LineAttribute : PropertyAttribute {
+        public readonly float Offset;
         public readonly float Thickness;
         public Color Color;
 
-        public LineAttribute(float thickness = 1.25f, float r = .5f, float g = .5f, float b = .5f){
+        public LineAttribute(float thickness = 1.25f, float r = .5f, float g = .5f, float b = .5f, float offset = 3){
             Thickness = thickness;
+            Offset = offset;
             Color = new Color(r, g, b);
         }
     }
@@ -19,12 +21,12 @@ namespace Boxey.Attributes {
             return LineAttribute.Thickness + EditorGUIUtility.standardVerticalSpacing;
         }
         public override void OnGUI(Rect position){
-            position.y += EditorGUIUtility.standardVerticalSpacing - 3;
+            position.y += EditorGUIUtility.standardVerticalSpacing - LineAttribute.Offset;
         
-            Color savedColor = GUI.color;
+            var savedColor = GUI.color;
             GUI.color = LineAttribute.Color;
 
-            GUIStyle lineStyle = new GUIStyle(GUI.skin.box) {
+            var lineStyle = new GUIStyle(GUI.skin.box) {
                 border = new RectOffset(0, 0, 0, 0),
                 margin = new RectOffset(0, 0, 2, 2),
                 padding = new RectOffset(0, 0, 0, 0),
@@ -33,7 +35,7 @@ namespace Boxey.Attributes {
                 }
             };
 
-            Rect lineRect = new Rect(position.x, position.y + (LineAttribute.Thickness * 0.5f), position.width, LineAttribute.Thickness);
+            var lineRect = new Rect(position.x, position.y + (LineAttribute.Thickness * 0.5f), position.width, LineAttribute.Thickness);
             GUI.Box(lineRect, GUIContent.none, lineStyle);
 
             GUI.color = savedColor;

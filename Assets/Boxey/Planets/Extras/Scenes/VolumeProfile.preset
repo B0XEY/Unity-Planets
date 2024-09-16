@@ -1,0 +1,72 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!181963792 &2655988077585873504
+Preset:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: VolumeProfile
+  m_TargetType:
+    m_NativeTypeID: 114
+    m_ManagedTypePPtr: {fileID: 11500000, guid: d7fd9488000d3734a9e00ee676215985,
+      type: 3}
+    m_ManagedTypeFallback: 
+  m_Properties:
+  - target: {fileID: 0}
+    propertyPath: m_Enabled
+    value: 1
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: m_EditorHideFlags
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: m_EditorClassIdentifier
+    value: 
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: components.Array.size
+    value: 8
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: components.Array.data[0]
+    value: 
+    objectReference: {fileID: 849379129802519247, guid: a6560a915ef98420e9faacc1c7438823,
+      type: 2}
+  - target: {fileID: 0}
+    propertyPath: components.Array.data[1]
+    value: 
+    objectReference: {fileID: -7893295128165547882, guid: a6560a915ef98420e9faacc1c7438823,
+      type: 2}
+  - target: {fileID: 0}
+    propertyPath: components.Array.data[2]
+    value: 
+    objectReference: {fileID: -7011558710299706105, guid: a6560a915ef98420e9faacc1c7438823,
+      type: 2}
+  - target: {fileID: 0}
+    propertyPath: components.Array.data[3]
+    value: 
+    objectReference: {fileID: 3496502714353302728, guid: a6560a915ef98420e9faacc1c7438823,
+      type: 2}
+  - target: {fileID: 0}
+    propertyPath: components.Array.data[4]
+    value: 
+    objectReference: {fileID: 7616038684790778913, guid: a6560a915ef98420e9faacc1c7438823,
+      type: 2}
+  - target: {fileID: 0}
+    propertyPath: components.Array.data[5]
+    value: 
+    objectReference: {fileID: -7933672167895733710, guid: a6560a915ef98420e9faacc1c7438823,
+      type: 2}
+  - target: {fileID: 0}
+    propertyPath: components.Array.data[6]
+    value: 
+    objectReference: {fileID: 757192568164299680, guid: a6560a915ef98420e9faacc1c7438823,
+      type: 2}
+  - target: {fileID: 0}
+    propertyPath: components.Array.data[7]
+    value: 
+    objectReference: {fileID: 8651397848662964255, guid: a6560a915ef98420e9faacc1c7438823,
+      type: 2}
+  m_ExcludedProperties: []

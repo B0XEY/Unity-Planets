@@ -15,7 +15,6 @@ float _MieFalloff;
 float _HeightAbsorbtion;
 
 
-
 float3 DensityAtPoint(float2 position)
 {
     float height = length(position) - _PlanetRadius;
@@ -37,29 +36,30 @@ float3 DensityAtPoint(float2 position)
 [numthreads(8, 8, 1)]
 void Main(uint2 id : SV_DispatchThreadID)
 {
-	float2 uv = id / (float)_TextureSize;
-	float height01 = uv.y;
+    float2 uv = id / (float)_TextureSize;
+    float height01 = uv.y;
 
-	float y = -2 * uv.x + 1;
-	float x = sin(acos(y));
-	float2 dir = float2(x, y);
-	
-	float2 inPoint = float2(0, lerp(_PlanetRadius, _AtmosphereRadius, height01));
+    float y = -2 * uv.x + 1;
+    float x = sin(acos(y));
+    float2 dir = float2(x, y);
+
+    float2 inPoint = float2(0, lerp(_PlanetRadius, _AtmosphereRadius, height01));
 
     float dstThroughAtmosphere = RaySphere(0, _AtmosphereRadius, float3(inPoint, 0), float3(dir, 0)).y;
 
     inPoint = inPoint + dir * 0.0001;
 
-	float stepSize = dstThroughAtmosphere / (_NumOutScatteringSteps - 1);
-	float3 outScattering = 0;
+    float stepSize = dstThroughAtmosphere / (_NumOutScatteringSteps - 1);
+    float3 outScattering = 0;
 
-	for (int i = 0; i < _NumOutScatteringSteps; i ++) {
-		float3 localDensity = DensityAtPoint(inPoint);
+    for (int i = 0; i < _NumOutScatteringSteps; i++)
+    {
+        float3 localDensity = DensityAtPoint(inPoint);
 
-		outScattering += localDensity * stepSize;
+        outScattering += localDensity * stepSize;
 
-		inPoint += dir * stepSize;
-	}
+        inPoint += dir * stepSize;
+    }
 
-	_Result[id.xy] = float4(outScattering.xyz, 0);
+    _Result[id.xy] = float4(outScattering.xyz, 0);
 }

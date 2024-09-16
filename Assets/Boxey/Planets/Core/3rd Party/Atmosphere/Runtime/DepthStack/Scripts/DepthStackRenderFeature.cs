@@ -1,8 +1,6 @@
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
-using System;
-
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
@@ -11,12 +9,11 @@ using UnityEditor;
 
 public class DepthStackRenderFeature : ScriptableRendererFeature
 {
+    private DepthStackRenderPass cameraRenderPass;
     private Material copyDepth;
 
-    DepthStackRenderPass cameraRenderPass;
-    
 
-    public override void Create() 
+    public override void Create()
     {
         ValidateDepthMaterial();
 
@@ -26,23 +23,21 @@ public class DepthStackRenderFeature : ScriptableRendererFeature
     }
 
 
-    public override void AddRenderPasses(ScriptableRenderer renderer, ref RenderingData renderingData) 
+    public override void AddRenderPasses(ScriptableRenderer renderer, ref RenderingData renderingData)
     {
-        if (!renderingData.cameraData.isPreviewCamera) 
-        {
-            renderer.EnqueuePass(cameraRenderPass);
-        }
+        if (!renderingData.cameraData.isPreviewCamera) renderer.EnqueuePass(cameraRenderPass);
     }
 
 
-
-    void ValidateDepthMaterial() 
+    private void ValidateDepthMaterial()
     {
-        Shader copyDepthShader = AddAlwaysIncludedShader("Hidden/EncodeDepth");
+        var copyDepthShader = AddAlwaysIncludedShader("Hidden/EncodeDepth");
 
-        if (copyDepthShader == null) 
+        if (copyDepthShader == null)
         {
-            Debug.LogError("CopyDepth shader could not be found! Make sure Hidden/CopyDepth shader is located somewhere in your project and included in 'Always Included Shaders'", this);
+            Debug.LogError(
+                "CopyDepth shader could not be found! Make sure Hidden/CopyDepth shader is located somewhere in your project and included in 'Always Included Shaders'",
+                this);
             return;
         }
 
@@ -50,21 +45,19 @@ public class DepthStackRenderFeature : ScriptableRendererFeature
     }
 
 
-    static Shader AddAlwaysIncludedShader(string shaderName)
+    private static Shader AddAlwaysIncludedShader(string shaderName)
     {
         var shader = Shader.Find(shaderName);
-        if (shader == null) 
-        {
-            return null;
-        }
-     
+        if (shader == null) return null;
+
 #if UNITY_EDITOR
-        var graphicsSettingsObj = AssetDatabase.LoadAssetAtPath<GraphicsSettings>("ProjectSettings/GraphicsSettings.asset");
+        var graphicsSettingsObj =
+            AssetDatabase.LoadAssetAtPath<GraphicsSettings>("ProjectSettings/GraphicsSettings.asset");
         var serializedObject = new SerializedObject(graphicsSettingsObj);
         var arrayProp = serializedObject.FindProperty("m_AlwaysIncludedShaders");
-        bool hasShader = false;
+        var hasShader = false;
 
-        for (int i = 0; i < arrayProp.arraySize; ++i)
+        for (var i = 0; i < arrayProp.arraySize; ++i)
         {
             var arrayElem = arrayProp.GetArrayElementAtIndex(i);
             if (shader == arrayElem.objectReferenceValue)
@@ -73,16 +66,16 @@ public class DepthStackRenderFeature : ScriptableRendererFeature
                 break;
             }
         }
-     
+
         if (!hasShader)
         {
-            int arrayIndex = arrayProp.arraySize;
+            var arrayIndex = arrayProp.arraySize;
             arrayProp.InsertArrayElementAtIndex(arrayIndex);
             var arrayElem = arrayProp.GetArrayElementAtIndex(arrayIndex);
             arrayElem.objectReferenceValue = shader;
-     
+
             serializedObject.ApplyModifiedProperties();
-     
+
             AssetDatabase.SaveAssets();
         }
 #endif

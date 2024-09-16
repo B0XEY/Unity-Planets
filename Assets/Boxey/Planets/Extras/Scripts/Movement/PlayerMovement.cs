@@ -62,13 +62,13 @@ namespace Boxey.Planets.Extras.Scripts.Movement {
             if (freeCam.enabled) {
                 return;
             }
-            _rotation.x += -Input.GetAxis("Mouse Y") * lookSpeed;
+            _rotation.x += -Input.GetAxis("Mouse Y") * lookSpeed * Time.deltaTime;
             _rotation.x = Mathf.Clamp(_rotation.x, -lookXLimit, lookXLimit);
             playerCamera.transform.localRotation = Quaternion.Euler(_rotation.x, 0, 0);
-            var localRotation = Quaternion.Euler(0f, Input.GetAxis("Mouse X") * lookSpeed, 0f);
-            transform.rotation *=localRotation;
+            var localRotation = Quaternion.Euler(0f, Input.GetAxis("Mouse X") * lookSpeed * Time.deltaTime, 0f);
+            transform.rotation *= localRotation;
             //grounded Check
-            _grounded = !Physics.SphereCast(transform.position, 0.25f, _gravity.GetDirectionToCenter(), out var hit);
+            _grounded = !Physics.SphereCast(transform.position, 1f, _gravity.GetDirectionToCenter(), out var hit);
             if (_grounded && Input.GetKeyDown(KeyCode.Space)) {
                 _rb.AddForce(transform.up * jumpHeight, ForceMode.VelocityChange);
             }
@@ -99,13 +99,8 @@ namespace Boxey.Planets.Extras.Scripts.Movement {
         }
 
         public void OnTeleport() {
-            freeCam.enabled = false;
-            Cursor.visible = false;
-            Cursor.lockState = CursorLockMode.Locked;
-            playerCamera.transform.localPosition = new Vector3(0, 1.69f, 0);
-            playerCamera.transform.localRotation = _cameraHeadRot;
-            _gravity.SetGravityUse(true);
             _gravity.FindClosestPlanet();
+            playerCamera.transform.localPosition = new Vector3(0, 1.69f, 0);
         }
     }
 }

@@ -1,0 +1,96 @@
+﻿Node.cs line 50
+        (_planetMap, _lastIndex, isEmpty) = JobManager.GetPlanetNoiseMapShader(_planetaryObject.NoiseComputeShader,mapSize, NodeLocalPosition(),
+        _planetaryObject.PlanetRadius, _planetaryObject.RootNode.NodeLocalPosition(), NodeScale(),
+        _planetaryObject.Seed, _planetaryObject.MaxPlanetDivisions,
+        _planetaryObject.PlanetData, _planetaryObject.NoiseCurves);
+
+JobManager.cs line 12-30
+        private const int ThreadGroupSize = 4;
+        private static readonly int ResultMap = Shader.PropertyToID("result_map");
+        private static readonly int NoiseFloatDataOne = Shader.PropertyToID("noise_float_data_one");
+        private static readonly int NoiseFloatDataTwo = Shader.PropertyToID("noise_float_data_two");
+        private static readonly int NoiseIntData = Shader.PropertyToID("noise_int_data");
+        private static readonly int NoiseOffsets = Shader.PropertyToID("noise_offsets");
+        private static readonly int NoiseCurves = Shader.PropertyToID("noise_curves");
+        
+        private static readonly int Seed = Shader.PropertyToID("seed");
+        private static readonly int ChunkResolution = Shader.PropertyToID("chunk_resolution");
+        private static readonly int PlanetRadius = Shader.PropertyToID("planet_radius");
+        private static readonly int CurveSamples = Shader.PropertyToID("curve_samples");
+        private static readonly int VoxelScale = Shader.PropertyToID("voxel_scale");
+        private static readonly int NoisePosition = Shader.PropertyToID("noise_position");
+        private static readonly int PlanetCenter = Shader.PropertyToID("planet_center");
+        private static readonly int CenterOffset = Shader.PropertyToID("center_offset");
+        private static readonly int DoNoiseLayers = Shader.PropertyToID("do_noise_layers");
+        private static readonly int NoiseLayers = Shader.PropertyToID("noise_layers");
+
+JobManager.cs line 138 without readonly ints (line 156 with)   
+        public static (float3[] map, int index, bool isEmpty) GetPlanetNoiseMapShader(ComputeShader shader, int chunkRes, Vector3 noisePosition, float planetRadius, Vector3 center, float nodeScale, int seed, int maxDivisions, PlanetData settings, float[] curves) {
+            var mapSize = chunkRes + 1;
+            var arrayLength = mapSize * mapSize * mapSize;
+            var map = new float3[arrayLength];
+            var layers = settings.NoiseLayers.Count;
+            var samples = curves.Length / layers;
+
+            var kernelHandle = shader.FindKernel("CSMain");
+            shader.SetInt(Seed, seed);
+            shader.SetInt(ChunkResolution, mapSize);
+            shader.SetFloat(PlanetRadius, planetRadius);
+            shader.SetInt(CurveSamples, samples);
+            shader.SetFloat(VoxelScale, nodeScale / chunkRes);
+            shader.SetVector(NoisePosition, noisePosition);
+            shader.SetVector(PlanetCenter, center);
+            shader.SetVector(CenterOffset, Vector3.one * (nodeScale / 2f));
+            shader.SetBool(DoNoiseLayers, settings.UseNoise);
+            shader.SetInt(NoiseLayers, layers);
+            
+            var noiseFloatDataOne = new float4[layers];
+            var noiseFloatDataTwo = new float3[layers];
+            var noiseIntData = new int2[layers];
+            var length = settings.NoiseLayers.Sum(layer => layer.Octaves);
+            var noiseOffsets = new float3[length];
+
+            for (var i = 0; i < layers; i++) {
+                var layer = settings.NoiseLayers[i];
+                var scale = layer.Scale * (Mathf.Pow(2, maxDivisions - 8) * (maxDivisions * 4.5f)) * 0.01f;
+
+                noiseFloatDataOne[i] = new float4(scale, layer.Lacunarity, layer.Persistence, layer.LayerPower);
+                noiseFloatDataTwo[i] = new float3(0, CalculateNoiseValueClamp(layer), layer.HeightMultiplier);
+                noiseIntData[i] = new int2(layer.Octaves, layer.Remove ? -1 : 1);
+                //offsets
+                noiseOffsets[i] = layer.Offset;
+            }
+            
+            var mapBuffer = new ComputeBuffer(arrayLength, sizeof(float) * 3);
+            mapBuffer.SetData(map);
+            shader.SetBuffer(kernelHandle, ResultMap, mapBuffer);
+            
+            var floatBufferOne = new ComputeBuffer(noiseFloatDataOne.Length, sizeof(float) * 4);
+            floatBufferOne.SetData(noiseFloatDataOne);
+            shader.SetBuffer(kernelHandle, NoiseFloatDataOne, floatBufferOne);
+            
+            var floatBufferTwo = new ComputeBuffer(noiseFloatDataTwo.Length, sizeof(float) * 3);
+            floatBufferTwo.SetData(noiseFloatDataTwo);
+            shader.SetBuffer(kernelHandle, NoiseFloatDataTwo, floatBufferTwo);
+            
+            var intBuffer = new ComputeBuffer(noiseIntData.Length, sizeof(int) * 2);
+            intBuffer.SetData(noiseIntData);
+            shader.SetBuffer(kernelHandle, NoiseIntData, intBuffer);
+            
+            var offsetBuffer = new ComputeBuffer(noiseOffsets.Length, sizeof(float) * 3);
+            offsetBuffer.SetData(noiseOffsets);
+            shader.SetBuffer(kernelHandle, NoiseOffsets, offsetBuffer);
+  
+            var curveBuffer = new ComputeBuffer(curves.Length, sizeof(float));
+            curveBuffer.SetData(curves);
+            shader.SetBuffer(kernelHandle, NoiseCurves, curveBuffer);
+            
+            var groups = Mathf.CeilToInt(mapSize / (float)ThreadGroupSize);
+            shader.Dispatch(kernelHandle, groups, groups, groups);
+            
+            mapBuffer.GetData(map);
+            Helpers.ReleaseBuffers(mapBuffer, floatBufferOne, floatBufferTwo, intBuffer, offsetBuffer, curveBuffer);
+
+            // Return the map
+            return (map, 0, false);
+        }

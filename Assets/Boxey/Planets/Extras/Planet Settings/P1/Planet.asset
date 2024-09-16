@@ -1,0 +1,174 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bce9c15965849d743afdbe2f940e453b, type: 3}
+  m_Name: Planet
+  m_EditorClassIdentifier: 
+  planetGravity: 9.81
+  atmosphereScale: 1.4
+  atmosphere: {fileID: 11400000, guid: 4b8297e2d56d1e9468c7e1c4eabab055, type: 2}
+  planetMaterial: {fileID: 2100000, guid: df0645c657084df43aee25a8d1d2fb83, type: 2}
+  groundToughness: 1
+  useNoise: 1
+  noiseLayers:
+  - layerName: Plains
+    layerPower: 1
+    remove: 0
+    scale: 2
+    octaves: 2
+    persistence: 0.3
+    lacunarity: 5
+    offset: {x: 0, y: 0, z: 0}
+    heightMultiplier: 1
+    heightCurve:
+      serializedVersion: 2
+      m_Curve:
+      - serializedVersion: 3
+        time: 0
+        value: 1
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      - serializedVersion: 3
+        time: 1
+        value: 0
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+  - layerName: Mountains
+    layerPower: 2
+    remove: 0
+    scale: 9.5
+    octaves: 1
+    persistence: 1
+    lacunarity: 1
+    offset: {x: 0, y: 0, z: 0}
+    heightMultiplier: 1
+    heightCurve:
+      serializedVersion: 2
+      m_Curve:
+      - serializedVersion: 3
+        time: 0
+        value: 0.000015258789
+        inSlope: -0.02546797
+        outSlope: -0.02546797
+        tangentMode: 0
+        weightedMode: 3
+        inWeight: 0
+        outWeight: 0.35785544
+      - serializedVersion: 3
+        time: 0.30579597
+        value: 0.009887539
+        inSlope: -0.006347336
+        outSlope: 0.037312493
+        tangentMode: 1
+        weightedMode: 3
+        inWeight: 1
+        outWeight: 1
+      - serializedVersion: 3
+        time: 0.50085485
+        value: 5.442834
+        inSlope: 4.2039733
+        outSlope: -4.4551764
+        tangentMode: 1
+        weightedMode: 3
+        inWeight: 0.09266962
+        outWeight: 0.07488029
+      - serializedVersion: 3
+        time: 0.7020755
+        value: -0.0006057024
+        inSlope: -0.066299744
+        outSlope: 0.03765597
+        tangentMode: 1
+        weightedMode: 3
+        inWeight: 1
+        outWeight: 1
+      - serializedVersion: 3
+        time: 0.9962158
+        value: 0.03994751
+        inSlope: 0.10141191
+        outSlope: -9.083653
+        tangentMode: 1
+        weightedMode: 3
+        inWeight: 0.37687978
+        outWeight: 0
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+  - layerName: Vallys
+    layerPower: 1
+    remove: 1
+    scale: 10
+    octaves: 1
+    persistence: 1
+    lacunarity: 1
+    offset: {x: 0, y: 0, z: 0}
+    heightMultiplier: 1
+    heightCurve:
+      serializedVersion: 2
+      m_Curve:
+      - serializedVersion: 3
+        time: -0.0009848718
+        value: -0.01139126
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      - serializedVersion: 3
+        time: 0.8378567
+        value: -0.011367798
+        inSlope: 0.059948605
+        outSlope: 16.619637
+        tangentMode: 1
+        weightedMode: 3
+        inWeight: 0.34956926
+        outWeight: 0.9731249
+      - serializedVersion: 3
+        time: 0.90081227
+        value: 8.046453
+        inSlope: 1.6391734
+        outSlope: -0.35353488
+        tangentMode: 1
+        weightedMode: 3
+        inWeight: 1
+        outWeight: 1
+      - serializedVersion: 3
+        time: 0.9625842
+        value: 0.02818644
+        inSlope: -15.992598
+        outSlope: 0.81622285
+        tangentMode: 1
+        weightedMode: 3
+        inWeight: 1
+        outWeight: 1
+      - serializedVersion: 3
+        time: 1.0001221
+        value: 0.03994751
+        inSlope: -0.18961093
+        outSlope: -9.083653
+        tangentMode: 1
+        weightedMode: 3
+        inWeight: 0.42488277
+        outWeight: 0
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4

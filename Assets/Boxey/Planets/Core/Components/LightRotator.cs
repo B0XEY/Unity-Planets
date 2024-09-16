@@ -4,12 +4,12 @@ using UnityEngine;
 namespace Boxey.Planets.Core.Components {
     [AddComponentMenu("Boxey/Components/Sun Rotator")]
     [RequireComponent(typeof(Light))]
-    public class LightRotator : MonoBehaviour{
+    public class LightRotator : MonoBehaviour {
         private Transform _mainCameraTransform;
 
-        private void Start(){
+        private void Start() {
             _mainCameraTransform = Helpers.GetCamera.transform;
-            
+
             if (_mainCameraTransform != null) {
                 return;
             }
@@ -17,7 +17,7 @@ namespace Boxey.Planets.Core.Components {
             enabled = false;
         }
 
-        private void Update(){
+        private void Update() {
             var directionToCamera = _mainCameraTransform.position - transform.position;
             var rotationToCamera = Quaternion.LookRotation(directionToCamera);
             transform.rotation = rotationToCamera;

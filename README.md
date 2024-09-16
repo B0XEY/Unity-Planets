@@ -1,13 +1,13 @@
-![Static Badge](https://img.shields.io/badge/Verson-2022.3.22f1-5300EB?style=for-the-badge&logo=Unity)
+![Static Badge](https://img.shields.io/badge/Verson-2022.3.45f1-5300EB?style=for-the-badge&logo=Unity)
 [![Static Badge](https://img.shields.io/badge/Code%20Quality-b-green?style=for-the-badge&logo=codacy)](https://app.codacy.com/gh/B0XEY/Unity-Planets/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
-[![Static Badge](https://img.shields.io/badge/Version-0.2.5b-blue?style=for-the-badge)](https://github.com/B0XEY/Unity-Planets/releases)
+[![Static Badge](https://img.shields.io/badge/Version-0.3.0b-blue?style=for-the-badge)](https://github.com/B0XEY/Unity-Planets/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
 
 > [!IMPORTANT]
 > This Code is unfinished and not deemed production-ready.
 > [Download a Small Demo Here](https://github.com/B0XEY/Unity-Planets/releases/tag/0.2.5)
 > 
-> More Update Soonish™️
+> More Update Never (sorry)
 
 # Project Overview
 The planets are fully customizable from the noise to the Terriforming that you do. I used a _ModTree_[^3] that will save all changes the player makes. Planets are boring with just terrain so why not mix it up and add some _trees_ and _grass_? All of these are aligned with the planet and thanks to not-so-random points we can spawn all the objects in the same position every time even when you load and unload the Node. This code also uses _Unity's Jobs/Burst systems_ to speed up the generation allowing for fast Update times and a higher average FPS. All the systems of the octree come together to create a wonderful place for the user to explore and make their own.
@@ -80,4 +80,4 @@ SOFTWARE.
 
 [^1]: These planets use 3D noise to shape the terrain. This is not the best option because of the lack of control. Thankfully [unbeGames's noise algorithm](https://github.com/unbeGames/noise.git) not only is jobs/ burst enabled but makes layered noise much faster than using normal librays.
 [^2]: The Terrian is made using the marching cube algorithm. The base of my code comes from this [video series](https://www.youtube.com/watch?v=dTdn3CC64sc&list=PLVsTSlfj0qsWt0qafrT6blp5yvchzO4ee) with was a big help with the generation. I have made minor tweaks and changes to speed up the generation. [Scrawk's Marching Cubes Project](https://github.com/Scrawk/Marching-Cubes)
-[^3]: The idea of the mod tree came from [here](https://josebasierra.gitlab.io/VoxelPlanets) after looking at solution to save memory.
+[^3]: The idea of the mod tree came from [here](https://josebasierra.gitlab.io/VoxelPlanets) after looking at solution to save memory. (Not in use anymore but kind is)

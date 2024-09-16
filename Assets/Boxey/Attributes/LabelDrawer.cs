@@ -16,7 +16,7 @@ namespace Boxey.Attributes {
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label){
             EditorGUI.BeginProperty(position, label, property);
 
-            GUIContent customLabelContent = new GUIContent(LabelAttribute.CustomLabel);
+            var customLabelContent = new GUIContent(LabelAttribute.CustomLabel);
             EditorGUI.PropertyField(position, property, customLabelContent);
 
             EditorGUI.EndProperty();

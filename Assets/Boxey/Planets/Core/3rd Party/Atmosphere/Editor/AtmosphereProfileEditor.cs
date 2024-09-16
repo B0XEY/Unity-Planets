@@ -1,26 +1,27 @@
-using UnityEngine;
 using UnityEditor;
-
+using UnityEngine;
 
 [CustomEditor(typeof(AtmosphereProfile))]
 public class AtmosphereProfileEditor : Editor
 {
-    SerializedProperty LUTSize;
-    SerializedProperty opticalDepthCompute;
-    SerializedProperty opticalDepthPoints;
-    SerializedProperty inScatteringPoints;
-    SerializedProperty sunIntensity;
-    SerializedProperty rayleighScatter;
-    SerializedProperty rayleighDensityFalloff;
-    SerializedProperty mieScatter;
-    SerializedProperty mieDensityFalloff;
-    SerializedProperty mieG;
-    SerializedProperty heightAbsorbtion;
-    SerializedProperty absorbtionColor;
-    SerializedProperty ambientColor;
+    // Fudge factor to make the wavelength values look right as colors in the inspector.
+    private const float colorFactor = 0.25f;
+    private SerializedProperty absorbtionColor;
+    private SerializedProperty ambientColor;
+    private SerializedProperty heightAbsorbtion;
+    private SerializedProperty inScatteringPoints;
+    private SerializedProperty LUTSize;
+    private SerializedProperty mieDensityFalloff;
+    private SerializedProperty mieG;
+    private SerializedProperty mieScatter;
+    private SerializedProperty opticalDepthCompute;
+    private SerializedProperty opticalDepthPoints;
+    private SerializedProperty rayleighDensityFalloff;
+    private SerializedProperty rayleighScatter;
+    private SerializedProperty sunIntensity;
 
 
-    void OnEnable()
+    private void OnEnable()
     {
         LUTSize = serializedObject.FindProperty("LUTSize");
         opticalDepthCompute = serializedObject.FindProperty("opticalDepthCompute");
@@ -83,16 +84,12 @@ public class AtmosphereProfileEditor : Editor
     }
 
 
-    // Fudge factor to make the wavelength values look right as colors in the inspector.
-    const float colorFactor = 0.25f;
-
-
-    void DrawWavelengthProperty(SerializedProperty property)
+    private void DrawWavelengthProperty(SerializedProperty property)
     {
-        SerializedProperty red = property.FindPropertyRelative("red");
-        SerializedProperty green = property.FindPropertyRelative("green");
-        SerializedProperty blue = property.FindPropertyRelative("blue");
-        SerializedProperty power = property.FindPropertyRelative("power");
+        var red = property.FindPropertyRelative("red");
+        var green = property.FindPropertyRelative("green");
+        var blue = property.FindPropertyRelative("blue");
+        var power = property.FindPropertyRelative("power");
 
         GUILayout.BeginHorizontal();
 
@@ -101,9 +98,9 @@ public class AtmosphereProfileEditor : Editor
         EditorGUIUtility.labelWidth += 35;
 
 
-        if (property.isExpanded) 
+        if (property.isExpanded)
         {
-            Color col = new Color(red.floatValue, green.floatValue, blue.floatValue) / colorFactor;
+            var col = new Color(red.floatValue, green.floatValue, blue.floatValue) / colorFactor;
 
             col = EditorGUILayout.ColorField(col);
 

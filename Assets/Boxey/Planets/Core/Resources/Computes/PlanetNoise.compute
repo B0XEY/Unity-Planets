@@ -1,0 +1,96 @@
+// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel CSMain
+
+#include "Assets/Boxey/Planets/Core/Materials/Computes/FastNoiseLite.hlsl"
+
+StructuredBuffer<float4> noise_float_data_one; //x: scale, y: lacunarity, z: persistence, w: layerPower
+StructuredBuffer<float3> noise_float_data_two; //x: min, y: max, z: height multi
+StructuredBuffer<int2> noise_int_data; //x: octaves, y: remove
+StructuredBuffer<float3> noise_offsets;
+StructuredBuffer<float> noise_curves;
+
+cbuffer Constants : register(b0) {
+    int seed;
+    int chunk_resolution;
+    float planet_radius;
+    int curve_samples;
+    float voxel_scale;
+    float3 noise_position;
+    float3 planet_center;
+    float3 center_offset;
+    bool do_noise_layers;
+    int noise_layers;
+}
+
+RWStructuredBuffer<float3> result_map;
+
+float evaluate_curve(const float time, const int offset) {
+    const int length = curve_samples - 1;
+    const float clamped_value = saturate(time);
+    const float curve_index = clamped_value * length;
+    const int floor_index = (int)floor(curve_index);
+    const int safe_index = min(floor_index + 1, length);
+
+    const float value1 = noise_curves[floor_index + offset];
+    const float value2 = noise_curves[safe_index + offset];
+    return lerp(value1, value2, frac(curve_index));
+}
+float get_value_at_point(float3 position, const fnl_state noise) {
+    float height = 0.0f;
+
+    for (int i = 0; i < noise_layers; i++) {
+        float sample_x = position.x / noise_float_data_one[i].x + noise_offsets[i].x;
+        float sample_y = position.y / noise_float_data_one[i].x + noise_offsets[i].y;
+        float sample_z = position.z / noise_float_data_one[i].x + noise_offsets[i].z;
+
+        float point_height = 0.0f;
+        float frequency = 1.0f;
+        float amplitude = 1.0f;
+
+        for (int o = 0; o < noise_int_data[i].x; o++) {
+            sample_x *= frequency;
+            sample_y *= frequency;
+            sample_z *= frequency;
+            point_height += (fnlGetNoise3D(noise, sample_x, sample_y, sample_z) + 1.0f) * 0.5f * amplitude;
+            frequency *= noise_float_data_one[i].y;
+            amplitude *= noise_float_data_one[i].z;
+        }
+
+        const float clamped_value = (point_height - noise_float_data_two[i].x) / (noise_float_data_two[i].y - noise_float_data_two[i].x);
+        const float normalized_value = evaluate_curve(clamped_value, curve_samples * i) * 0.01f * noise_float_data_two[i].z;
+        height += normalized_value * noise_float_data_one[i].w * noise_int_data[i].y;
+    }
+
+    return height;
+}
+float pack(float2 uv) {
+    const uint int_x = (uint)(uv.x * 65535.0f);
+    const uint int_y = (uint)(uv.y * 65535.0f);
+    const uint packed = (int_x << 16) | int_y;
+    return asfloat(packed);
+}
+
+[numthreads(8,8,8)]
+void CSMain (uint3 id : SV_DispatchThreadID){
+    if (id.x >= chunk_resolution || id.y >= chunk_resolution || id.z >= chunk_resolution) {
+        return;
+    }
+    
+    fnl_state noise = fnlCreateState();
+    noise.seed = seed;
+    noise.noise_type = FNL_NOISE_PERLIN;
+    
+    float3 voxelPosition = (id * voxel_scale) + noise_position - center_offset;;
+    float distanceFromCenter = distance(voxelPosition, planet_center);
+    float radiusValue = saturate((distanceFromCenter - planet_radius) / -planet_radius) * 2 - 1;
+    float mapValue = radiusValue;
+
+    if (do_noise_layers) {
+        mapValue *= 2.5f;
+        mapValue += get_value_at_point(voxelPosition, noise);
+    } else {
+        mapValue *= 5.0f;
+    }\
+    const int index = id.x + id.y * chunk_resolution + id.z * chunk_resolution * chunk_resolution;
+    result_map[index] = float3(mapValue, pack(0), pack(float2(0.5, 1.0)));
+}

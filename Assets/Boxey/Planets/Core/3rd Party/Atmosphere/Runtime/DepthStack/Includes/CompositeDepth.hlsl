@@ -29,67 +29,70 @@ float4 SamplePrevDepth(float2 uv)
 
 
 // Composite depth sample- If the current depth sample goes past the depth buffer's bounds, the secondary depth buffer is sampled insted
-float4 SampleCompositeDepth(float2 uv) {
-	float rawDepth = SampleDepth(uv);
-	float4 compositeDepth = 0;
-
-	if (_RenderOverlay == 1 && rawDepth <= 0.0) {
-		// If rendering an overlay and end of depth is reached:
-		compositeDepth = SamplePrevDepth(uv);
-	} else {
-		// Normal scene depth
-		compositeDepth.x = rawDepth;
-		compositeDepth.y = 0;
-		compositeDepth.zw = _ZBufferParams.zw;
-	}
-
-	return compositeDepth;
-}
-
-
-float CompositeDepthRaw(float2 uv) 
+float4 SampleCompositeDepth(float2 uv)
 {
-	return SampleCompositeDepth(uv).x;
+    float rawDepth = SampleDepth(uv);
+    float4 compositeDepth = 0;
+
+    if (_RenderOverlay == 1 && rawDepth <= 0.0)
+    {
+        // If rendering an overlay and end of depth is reached:
+        compositeDepth = SamplePrevDepth(uv);
+    }
+    else
+    {
+        // Normal scene depth
+        compositeDepth.x = rawDepth;
+        compositeDepth.y = 0;
+        compositeDepth.zw = _ZBufferParams.zw;
+    }
+
+    return compositeDepth;
 }
 
 
-float CompositeDepth01(float2 uv) 
+float CompositeDepthRaw(float2 uv)
 {
-	float4 compositeDepth = SampleCompositeDepth(uv);
-	return Linear01Depth(compositeDepth.x, compositeDepth);
+    return SampleCompositeDepth(uv).x;
 }
 
 
-float CompositeDepthEye(float2 uv) 
+float CompositeDepth01(float2 uv)
+{
+    float4 compositeDepth = SampleCompositeDepth(uv);
+    return Linear01Depth(compositeDepth.x, compositeDepth);
+}
+
+
+float CompositeDepthEye(float2 uv)
 {
     float4 compositeDepth = SampleCompositeDepth(uv);
 
-	return LinearEyeDepth(compositeDepth.x, compositeDepth);
+    return LinearEyeDepth(compositeDepth.x, compositeDepth);
 }
 
 // Linear depth scaled by camera view ray distance- useful for finding world position of a fragment or for ray-marching 
-float CompositeDepthScaled(float2 uv, float viewLength, out bool isEndOfDepth) 
+float CompositeDepthScaled(float2 uv, float viewLength, out bool isEndOfDepth)
 {
-	float rawDepth = SampleDepth(uv);
+    float rawDepth = SampleDepth(uv);
 
-	isEndOfDepth = rawDepth <= 0.0;
+    isEndOfDepth = rawDepth <= 0.0;
 
-	float depth = 0.0;
+    float depth = 0.0;
 
-	if (_RenderOverlay == 1 && isEndOfDepth) {
-		// If rendering an overlay and end of depth is reached:
-		float4 encInfo = SamplePrevDepth(uv);
+    if (_RenderOverlay == 1 && isEndOfDepth)
+    {
+        // If rendering an overlay and end of depth is reached:
+        float4 encInfo = SamplePrevDepth(uv);
 
-		isEndOfDepth = encInfo.x <= 0.0;
+        isEndOfDepth = encInfo.x <= 0.0;
 
-		depth = LinearEyeDepth(encInfo.x, encInfo) * encInfo.y;
-	}
+        depth = LinearEyeDepth(encInfo.x, encInfo) * encInfo.y;
+    }
 
-	depth = LinearEyeDepth(rawDepth, _ZBufferParams) * viewLength;
+    depth = LinearEyeDepth(rawDepth, _ZBufferParams) * viewLength;
 
-	return depth;
+    return depth;
 }
 
 #endif
-
-
